@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Button, Col, Row} from 'antd';
+import { Button,  Upload, Modal, Form, Input, Select } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 
 export default function ArticleForm() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ export default function ArticleForm() {
     couleur: "#000000",
     image: null as File | null,
   });
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false); // for submit loading state
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -20,129 +23,121 @@ export default function ArticleForm() {
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFormData({ ...formData, image: e.target.files[0] });
+  const handleImageChange = (file: File) => {
+    setFormData({ ...formData, image: file });
+    return false;
+  };
+
+  const handleSubmit = async (values: any) => {
+    setLoading(true);
+    try {
+      // Simulate form submission, replace with your actual API call
+      console.log("Form submitted:", formData);
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-  };
-/*mt-5 => haut, ml-5=>left , mr-5=>right, mb-5=>en bas*/ 
   return (
-    < >
-      <Row className="d-flex justify-content-center  ">
-        <Col>
-      <h2 className="p-6 border rounded shadow-lg">Ajouter un Article</h2>
-      </Col>
-      </Row>
-    
-      
-        <Row className="d-flex justify-content-center  mt-3">
-          <Col>
-          <input 
-            type="text" 
-            name="designation" 
-            placeholder="Désignation" 
-            value={formData.designation} 
-            onChange={handleChange} 
-            className="w-full p-2 border rounded" 
-            required 
-          />
-          </Col>
-        </Row>
-         
-        <Row className="d-flex justify-content-center mt-2 ">
-          <Col>
-          <select 
-            name="category" 
-            value={formData.category} 
-            onChange={handleChange} 
-            className="w-full p-2 border rounded"
+    <>
+      <Button type="primary" onClick={() => setModalVisible(true)}>
+        Ajouter un article
+      </Button>
+      <Modal
+        title="Ajouter un article"
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={formData}
+        >
+          <Form.Item
+            label="Désignation"
+            name="designation"
+            rules={[{ required: true, message: 'Veuillez entrer la désignation' }]}
           >
-            <option value="">Sélectionner une catégorie</option>
-            <option value="cat1">Catégorie 1</option>
-            <option value="cat2">Catégorie 2</option>
-            <option value="cat3">Catégorie 3</option>
-            <option value="cat4">Catégorie 4</option>
-          </select>
-          </Col>
-        </Row>
-       
-        <Row className="d-flex justify-content-center mt-2 ">
-     <Col>
-          <input 
-            type="number" 
-            name="pointsFid" 
-            placeholder="Nombre de points fidélité" 
-            value={formData.pointsFid} 
-            onChange={handleChange} 
-            className="w-full p-2 border rounded" 
-            required 
-          />
-          </Col>
-        </Row>
-       
-        <Row className="d-flex justify-content-center mt-2 ">
-        <Col>
-          <input 
-            type="number" 
-            name="tva" 
-            placeholder="TVA" 
-            value={formData.tva} 
-            onChange={handleChange} 
-            className="w-full p-2 border rounded" 
-            required 
-          />
-          </Col>
-        </Row>
-        
-        <Row className="d-flex justify-content-center mt-2 ">
-          <Col>
-          <input 
-            type="number" 
-            name="prixTTC" 
-            placeholder="Prix TTC" 
-            value={formData.prixTTC} 
-            onChange={handleChange} 
-            className="w-full p-2 border rounded" 
-            required 
-          />
-          </Col>
-        </Row>
-        
-        <Row className="d-flex justify-content-center mt-2 ">
-        <Col>
-        <label htmlFor="couleur" className="block mb-2">Couleur</label>
-        <input 
-         type="color" 
-         name="couleur" 
-         value={formData.couleur} 
-        onChange={handleChange} 
-      className="w-full p-2 border rounded" 
-          />
-          </Col>
-          </Row>
+            <Input
+              type="text"
+              name="designation"
+              placeholder="Désignation"
+              value={formData.designation}
+              onChange={handleChange}
+            />
+          </Form.Item>
+          <Form.Item label="Catégorie" name="category">
+  <Select
+    value={formData.category}
+    onChange={(value) => setFormData({ ...formData, category: value })}
+    options={[
+      { value: "cat1", label: "ENTRÉE" },
+      { value: "cat2", label: "PLATS 2" },
+      { value: "cat3", label: "SAUCES" },
+      { value: "cat4", label: "SUPPLÉMENTS" },
+      { value: "cat5", label: "DESSERTS" },
+      { value: "cat6", label: "BOISSONS" },
 
-        
-          <Row className="d-flex justify-content-center mt-2 ">
-            <Col>
-          <input 
-      
-            type="file" 
-            name="image" 
-            accept="image/*" 
-            onChange={handleImageChange} 
-            className="w-full p-2 border rounded" 
-          />
-          </Col>
-        </Row>
-       
-       <Row className="d-flex justify-content-center mt-2 "><Col>
-        <Button type="primary" onClick={handleSubmit}>Ajouter</Button></Col> </Row>
-             
+    ]}
+  />
+</Form.Item>
+
+          <Form.Item label="Points Fidélité" name="pointsFid">
+            <Input
+              type="number"
+              name="pointsFid"
+              placeholder="Nombre de points fidélité"
+              value={formData.pointsFid}
+              onChange={handleChange}
+            />
+          </Form.Item>
+          <Form.Item label="TVA" name="tva">
+            <Input
+              type="number"
+              name="tva"
+              placeholder="TVA"
+              value={formData.tva}
+              onChange={handleChange}
+            />
+          </Form.Item>
+          <Form.Item label="Prix TTC" name="prixTTC">
+            <Input
+              type="number"
+              name="prixTTC"
+              placeholder="Prix TTC"
+              value={formData.prixTTC}
+              onChange={handleChange}
+            />
+          </Form.Item>
+          <Form.Item label="Couleur" name="couleur">
+            <Input
+              type="color"
+              name="couleur"
+              value={formData.couleur}
+              onChange={handleChange}
+            />
+          </Form.Item>
+          <Form.Item label="Image" name="image">
+            <Upload beforeUpload={handleImageChange} showUploadList={false}>
+              <Button icon={<UploadOutlined />}>Choisir une image</Button>
+            </Upload>
+          </Form.Item>
+          <Form.Item>
+            <Button 
+              type="primary" 
+              htmlType="submit"
+              loading={loading} 
+              disabled={loading}
+            >
+              Ajouter
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }

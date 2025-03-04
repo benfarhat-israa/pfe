@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Button, Col, Row} from 'antd';
+import { Button, Upload, Modal, Form, Input } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 
 export default function CategoriesForm() {
   const [formCategory, setformCategory] = useState({
@@ -7,7 +8,8 @@ export default function CategoriesForm() {
     couleur: "#000000",
     image: null as File | null,
   });
-  
+  const [modalVisible, setModalVisible] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setformCategory({
@@ -16,80 +18,55 @@ export default function CategoriesForm() {
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-        setformCategory({ ...formCategory, image: e.target.files[0] });
-    }
+  const handleImageChange = (file: File) => {
+    setformCategory({ ...formCategory, image: file });
+    return false;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     console.log("Form submitted:", formCategory);
+    setModalVisible(false);
   };
-/*mt-5 => haut, ml-5=>left , mr-5=>right, mb-5=>en bas*/ 
-  return (
-    < >
-      <Row className="d-flex justify-content-center  ">
-        <Col>
-      <h2 className="p-6 border rounded shadow-lg">Ajouter une categorie</h2>
-      </Col>
-      </Row>
-    
-      
-        <Row className="d-flex justify-content-center  mt-3">
-          <Col>
-          <input 
-            type="text" 
-            name="designation" 
-            placeholder="Désignation" 
-            value={formCategory.designation} 
-            onChange={handleChange} 
-            className="w-full p-2 border rounded" 
-            required 
-          />
-          </Col>
-        </Row>
-         
-      
-       
-       
-        
-        <Row className="d-flex justify-content-center mt-2 ">
-        <Col>
-        <label htmlFor="couleur" className="block mb-2">Couleur</label>
-        <input 
-         type="color" 
-         name="couleur" 
-         value={formCategory.couleur} 
-        onChange={handleChange} 
-      className="w-full p-2 border rounded" 
-          />
-          </Col>
-          </Row>
 
-        
-          <Row className="d-flex justify-content-center mt-2 ">
-            <Col>
-          <input 
-      
-            type="file" 
-            name="image" 
-            accept="image/*" 
-            onChange={handleImageChange} 
-            className="w-full p-2 border rounded" 
-          />
-          </Col>
-        </Row>
-       
-       <Row className="d-flex justify-content-center mt-2 "><Col>
-        <Button type="primary" onClick={handleSubmit}>Ajouter</Button></Col> </Row>
-             
+  return (
+    <>
+      <Button type="primary" onClick={() => setModalVisible(true)}>
+        Ajouter une catégorie
+      </Button>
+      <Modal
+        title="Ajouter une catégorie"
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        <Form layout="vertical" onFinish={handleSubmit}>
+          <Form.Item label="Désignation" required>
+            <Input
+              type="text"
+              name="designation"
+              placeholder="Désignation"
+              value={formCategory.designation}
+              onChange={handleChange}
+            />
+          </Form.Item>
+          <Form.Item label="Couleur">
+            <Input
+              type="color"
+              name="couleur"
+              value={formCategory.couleur}
+              onChange={handleChange}
+            />
+          </Form.Item>
+          <Form.Item label="Image">
+            <Upload beforeUpload={handleImageChange} showUploadList={false}>
+              <Button icon={<UploadOutlined />}>Choisir une image</Button>
+            </Upload>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">Ajouter</Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }
-
-
-
-
-
-  
