@@ -1,85 +1,96 @@
-import React from "react";
-import { Card, Col, Row, Button, Typography, Divider } from "antd";
+import React from 'react';
+import { Card, Typography, Button, Row, Col, Modal } from 'antd';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
+// Définition des types des props du modal
+interface CommandesModalProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+// Liste des commandes en attente
 const commandesAttente = [
-  { commandeNum: "CMD12345", nombreArticles: 5, totalCommande: 150.0, resteAPayer: 50.0 },
-  { commandeNum: "CMD67890", nombreArticles: 3, totalCommande: 80.0, resteAPayer: 20.0 },
-  { commandeNum: "CMD54321", nombreArticles: 4, totalCommande: 120.0, resteAPayer: 0.0 },
-  { commandeNum: "CMD09876", nombreArticles: 6, totalCommande: 200.0, resteAPayer: 0.0 },
+  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
+  { commandeNum: "202502270003", nombreArticles: 1, totalCommande: 15.5, resteAPayer: 15.5 },
+  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
+  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
+  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
+  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
 ];
 
-
-
-const CommandeList = ({ title, commandes }: { title: string; commandes: any[] }) => {
+const CommandesModal: React.FC<CommandesModalProps> = ({ visible, onClose }) => {
   return (
-    <Card title={title} bordered={false} style={{ textAlign: "center" }}>
-      {commandes.map((commande, index) => (
-        <div key={index}>
-          <Title level={4}>Commande N°: {commande.commandeNum}</Title>
-          <Text strong>Nombre d'articles: </Text> {commande.nombreArticles} <br />
-          <Text strong>Total Commande: </Text> {commande.totalCommande} € <br />
-          <Text strong>Reste à payer: </Text> {commande.resteAPayer} € <br /><br />
-
-          <Row gutter={16} justify="center">
-            <Col>
-              <Button
-                type="primary"
-                style={{
-                  backgroundColor: "transparent",
-                  borderColor: "#1890ff", 
-                  color: "#1890ff", 
-                }}
-              >
-                Continuer
-              </Button>
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                style={{
-                  backgroundColor: "transparent",
-                  borderColor: "green", 
-                  color: "green", 
-                }}
-              >
-                Valider
-              </Button>
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                danger
-                style={{
-                  backgroundColor: "transparent",
-                  borderColor: "red", 
-                  color: "red", 
-                }}
-              >
-                Annuler
-              </Button>
-            </Col>
-          </Row>
-
-          {index < commandes.length - 1 && (
-            <Divider style={{ borderColor: "#7cb305" }} dashed />
-          )}
-        </div>
-      ))}
-    </Card>
+    <Modal title="Commandes en attentes" open={visible} onCancel={onClose} footer={null} width={900}>
+      <Row gutter={[16, 16]}>
+        {commandesAttente.map((commande, index) => (
+          <Col span={12} key={index}>
+            <Card>
+              <Text strong>Cmd num :</Text> {commande.commandeNum} <br />
+              <Text strong>Nbr articles :</Text> {commande.nombreArticles} <br />
+              <Text strong>Total cmd :</Text> {commande.totalCommande.toFixed(2)} € <br />
+              <Text strong>Reste à payer :</Text> <Text>{commande.resteAPayer.toFixed(2)} €</Text> <br />
+              <Row gutter={8} justify="center" style={{ marginTop: 10 }}>
+                <Col>
+                  <Button 
+                    type="primary" 
+                    ghost 
+                    style={{ 
+                      backgroundColor: 'transparent', 
+                      borderColor: '#1890ff', 
+                      color: '#1890ff' 
+                    }}
+                  >
+                    Continuer
+                  </Button>
+                </Col>
+                <Col>
+                  <Button 
+                    type="primary" 
+                    ghost 
+                    style={{ 
+                      backgroundColor: 'transparent', 
+                      borderColor: '#52c41a', 
+                      color: '#52c41a' 
+                    }}
+                  >
+                    Valider
+                  </Button>
+                </Col>
+                <Col>
+                  <Button 
+                    type="primary" 
+                    ghost 
+                    danger 
+                    style={{ 
+                      backgroundColor: 'transparent', 
+                      borderColor: '#ff4d4f', 
+                      color: '#ff4d4f' 
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+      <div style={{ textAlign: 'center', marginTop: 20 }}>
+        <Button type="default" onClick={onClose}>Fermer</Button>
+      </div>
+    </Modal>
   );
 };
 
 const App: React.FC = () => {
+  const [visible, setVisible] = React.useState<boolean>(true);
+
   return (
-    <Row gutter={24} justify="center" style={{ marginTop: 50 }}>
-      <Col span={12}>
-        <CommandeList title="Commandes en attente" commandes={commandesAttente} />
-      </Col>
-      <Col span={12}>
-      </Col>
-    </Row>
+    <div style={{ padding: 20 }}>
+      <Button type="primary" onClick={() => setVisible(true)}>Afficher les commandes</Button>
+      <CommandesModal visible={visible} onClose={() => setVisible(false)} />
+    </div>
   );
 };
 
