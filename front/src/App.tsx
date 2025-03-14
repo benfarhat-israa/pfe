@@ -3,18 +3,14 @@ import Login from "./Component/Login";
 import Home from "./Component/Home";
 import ArticleForm from "./Component/ArticleForm"; 
 import CategoriesForm from "./Component/CategoriesForm"; 
-import GestionArticle from "./Component/GestionArticle";
-import GestionCategorie from "./Component/GestionCategorie";
+import GestionProduit from "./Component/GestionProduit";
 import CmndEnAtt from "./Component/CmndEnAtt";
 
 const AppRoutes = () => {
   return useRoutes([
     { path: "/login", element: <Login /> },
     { path: "/home", element: <Home /> },
-    { path: "/ajouter-article", element: <ArticleForm /> },
-    {path: "/ajouter-categorie",element: <CategoriesForm/>},
-    {path : "/gestion-article",element:<GestionArticle/>},
-    {path : "/gestion-categorie",element:<GestionCategorie/>},
+    {path : "/gestion-produit",element:<GestionProduit/>},
     {path : "/liste-commande",element:<CmndEnAtt/>},
 
 
