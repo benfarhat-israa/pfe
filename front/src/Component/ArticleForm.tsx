@@ -13,7 +13,7 @@ export default function ArticleForm() {
     image: null as File | null,
   });
   const [modalVisible, setModalVisible] = useState(false);
-  const [loading, setLoading] = useState(false); // for submit loading state
+  const [loading, setLoading] = useState(false); 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -127,15 +127,28 @@ export default function ArticleForm() {
             </Upload>
           </Form.Item>
           <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              loading={loading} 
-              disabled={loading}
-            >
-              Ajouter
-            </Button>
-          </Form.Item>
+  <div style={{ textAlign: "center" }}>
+    <Button 
+      type="primary" 
+      htmlType="submit"
+      loading={loading} 
+      disabled={loading}
+      style={{ marginRight: "8px" }}
+    >
+      Ajouter
+    </Button> 
+    <Button 
+      type="default" 
+      htmlType="button"
+      loading={loading} 
+      disabled={loading}
+      onClick={() => setModalVisible(false)}
+    >
+      Annuler
+    </Button>
+  </div>
+</Form.Item>
+
         </Form>
       </Modal>
     </>

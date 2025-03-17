@@ -63,7 +63,22 @@ export default function CategoriesForm() {
             </Upload>
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit">Ajouter</Button>
+            <div style={{ textAlign: "center" }}>
+              <Button 
+                type="primary" 
+                htmlType="submit"
+                style={{ marginRight: "8px" }}
+              >
+                Ajouter
+              </Button>
+              <Button 
+                type="default" 
+                htmlType="button"
+                onClick={() => setModalVisible(false)}
+              >
+                Annuler
+              </Button>
+            </div>
           </Form.Item>
         </Form>
       </Modal>

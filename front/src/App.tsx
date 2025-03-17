@@ -1,8 +1,6 @@
 import { useRoutes } from "react-router-dom";
 import Login from "./Component/Login";
 import Home from "./Component/Home";
-import ArticleForm from "./Component/ArticleForm"; 
-import CategoriesForm from "./Component/CategoriesForm"; 
 import GestionProduit from "./Component/GestionProduit";
 import CmndEnAtt from "./Component/CmndEnAtt";
 

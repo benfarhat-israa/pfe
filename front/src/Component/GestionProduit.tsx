@@ -58,7 +58,6 @@ const GestionProduit: React.FC = () => {
     <div style={{ padding: 20 }}>
       <Menu onClick={(e) => setCurrent(e.key as 'article' | 'categorie')} selectedKeys={[current]} mode="horizontal" items={items} />
 
-      {/* ✅ Bouton aligné à droite */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '20px 0' }}>
         <Button type="primary" onClick={() => showModal(current === 'article')}>
           {current === 'article' ? 'Ajouter Article' : 'Ajouter Catégorie'}
@@ -95,7 +94,6 @@ const GestionProduit: React.FC = () => {
         ]} />
       )}
 
-      {/* MODAL FORMULAIRE */}
       <Modal title={isArticleForm ? "Ajouter un Article" : "Ajouter une Catégorie"} open={modalVisible} onCancel={handleCancel} footer={null}>
         <Form layout="vertical" onFinish={handleSubmit}>
           <Form.Item label="Désignation" name="designation" rules={[{ required: true, message: 'Veuillez entrer la désignation' }]}>
@@ -130,11 +128,15 @@ const GestionProduit: React.FC = () => {
             </Upload>
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              {isArticleForm ? 'Ajouter Article' : 'Ajouter Catégorie'}
-            </Button>
-          </Form.Item>
+          <Form.Item style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+  <Button type="primary" htmlType="submit">
+    {isArticleForm ? 'Ajouter Article' : 'Ajouter Catégorie'}
+  </Button>
+  <Button type="default" onClick={() => setModalVisible(false)}>
+    Annuler
+  </Button>
+</Form.Item>
+
         </Form>
       </Modal>
     </div>
