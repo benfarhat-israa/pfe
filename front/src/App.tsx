@@ -6,7 +6,7 @@ import CategoriesForm from "./Component/CategoriesForm";
 
 const AppRoutes = () => {
   return useRoutes([
-    { path: "/", element: <Login /> },
+    { path: "/login", element: <Login /> },
     { path: "/home", element: <Home /> },
     { path: "/ajouter-article", element: <ArticleForm /> },
     {path: "/ajouter-categorie",element: <CategoriesForm/>},
