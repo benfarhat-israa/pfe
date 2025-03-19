@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Layout, Button, Table, Card, Row, Col, Typography, Divider, Space, Modal, Input } from "antd";
+import { Layout, Button, Table, Card, Row, Col, Typography, Divider, Space, Modal, InputNumber, Input } from "antd";
 import { CheckOutlined, CloseOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import ClientInfo from "./ClientInfo";
-import NumericKeyboard from "./NumericKeyboard";
+import { useNavigate } from "react-router-dom";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -13,7 +13,7 @@ interface CartItem {
   quantity: number;
   price: number;
 }
-
+// Catégories disponibles
 const categories = [
   { id: 1, name: "ENTRÉE" },
   { id: 2, name: "PLATS" },
@@ -23,6 +23,7 @@ const categories = [
   { id: 6, name: "BOISSONS" }
 ];
 
+// Structure des produits par catégorie
 const articles = [
   { id: 1, name: "Salade César", price: 5.5, img: "https://images.ricardocuisine.com/services/recipes/8440.jpg", id_category: 1 },
   { id: 2, name: "Soupe de légumes", price: 4.5, img: "https://img.cuisineaz.com/1024x576/2022/07/11/i184647-soupe-legumes.jpeg", id_category: 1 },
@@ -39,13 +40,14 @@ const articles = [
   { id: 13, name: "Jus d'orange", price: 2.5, img: "https://sf1.topsante.com/wp-content/uploads/topsante/2023/10/pourquoi-faut-arreter-verre-jus-orange-matin.jpeg", id_category: 6 }
 ];
 
+
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<{ name: string; price: number } | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [quantity, setQuantity] = useState<number>(1);
 
   const showModal = (article: { name: string; price: number }) => {
     setSelectedArticle(article);
@@ -78,25 +80,10 @@ const Home: React.FC = () => {
     });
   };
 
-  const handleQuantityChange = (value: number, key: number) => {
-    const updatedCart = cart.map((item) =>
-      item.key === key ? { ...item, quantity: value, price: value * item.price / item.quantity } : item
-    );
-    setCart(updatedCart);
-  };
-
   const totalAmount: string = cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
 
   const columns = [
-    { title: "QTE", dataIndex: "quantity", key: "quantity", render: (quantity: number, record: CartItem) => (
-      <Input
-        type="number"
-        value={quantity}
-        onChange={(e) => handleQuantityChange(Number(e.target.value), record.key)}
-        min={1}
-        style={{ width: "60px",textAlign:"center" }}
-      />
-    )},
+    { title: "QTE", dataIndex: "quantity", key: "quantity" },
     { title: "DÉSIGNATION", dataIndex: "name", key: "name" },
     {
       title: "PRIX",
@@ -108,131 +95,39 @@ const Home: React.FC = () => {
 
   const filteredArticles = articles.filter((article) => article.id_category === selectedCategory);
 
-  const handleKeyPress = (key: number) => {
-    setQuantity((prev) => prev * 10 + key);
-  };
-
-  const handleBackspace = () => {
-    setQuantity((prev) => Math.floor(prev / 10));
-  };
-
-  const handleClear = () => {
-    setQuantity(0);
-  };
-
-  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
-
   
   return (
     <Row>
-     <Col xs={24} sm={12} md={6} lg={6} xl={6}>
-      <Sider width="100%" className="bg-white shadow-sm">
-        <Title level={4}>🛒 Panier</Title>
-        <Divider />
-        <Table
-          columns={columns}
-          dataSource={cart}
-          pagination={false}
-          size="small"
-          summary={() => (
-            <Table.Summary.Row>
-              <Table.Summary.Cell index={0} colSpan={2}>
-                <strong>Total :</strong>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                <strong>{totalAmount} €</strong>
-              </Table.Summary.Cell>
-            </Table.Summary.Row>
-          )}
-        />
-        
-        {/* Sélection du moyen de paiement */}
-        <div className="mt-3">
-  <Title level={5}>Moyen de paiement :</Title>
-  <Space>
-    <Button 
-      type={paymentMethod === "cash" ? "primary" : "default"} 
-      icon="💵"
-      onClick={() => setPaymentMethod("cash")}
-    >
-      Espèces
-    </Button>
-    <Button 
-      type={paymentMethod === "card" ? "primary" : "default"} 
-      icon="💳"
-      onClick={() => setPaymentMethod("card")}
-    >
-      Carte
-    </Button>
-    <Button 
-      type={paymentMethod === "mobile" ? "primary" : "default"} 
-      icon="📱"
-      onClick={() => setPaymentMethod("mobile")}
-    >
-      Mobile
-    </Button>
-  </Space>
-</div>
-
-
-        <div className="d-flex justify-content-between mt-3">
-  <Button danger icon={<CloseOutlined />} onClick={() => setCart([])}>
-    Annuler
-  </Button>
-  <Button 
-  type="primary" 
-  icon={<CheckOutlined />} 
-  disabled={!paymentMethod}
-  onClick={() => {
-    if (paymentMethod) {
-      Modal.success({
-        title: "Paiement réussi",
-        content: `Le paiement en ${paymentMethod === "cash" ? "espèces" : paymentMethod === "card" ? "carte bancaire" : "paiement mobile"} a été validé.`,
-      
-      });
-      const detail=[
-        {
-            "key": 1,
-            "name": "Ketchup",
-            "quantity": 1,
-            "price": 1.2
-        },
-        {
-            "key": 2,
-            "name": "Mayonnaise",
-            "quantity": 1,
-            "price": 1.5
-        }
-    ]
-    // const data={
-    //   commande:{prix:"2.7",..},
-    //   detailcommande:[{
-    //     "key": 1,
-    //     "name": "Ketchup",
-    //     "quantity": 1,
-    //     "price": 1.2
-    // },
-    // {
-    //     "key": 2,
-    //     "name": "Mayonnaise",
-    //     "quantity": 1,
-    //     "price": 1.5
-    // }],
-    // reglement:{typepaiment:"espece",montant:2.7,...}
-    // }
-  
-      console.log(cart)
-      setCart([]); // Vide le panier après le paiement
-
-    }
-  }}
->
-  Valider
-</Button>
-
-</div>
-      </Sider>
-    </Col>
+      <Col xs={24} sm={12} md={6} lg={6} xl={6}>
+        <Sider width="100%" className="bg-white shadow-sm">
+          <Title level={4}>🛒 Panier</Title>
+          <Divider />
+          <Table
+            columns={columns}
+            dataSource={cart}
+            pagination={false}
+            size="small"
+            summary={() => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0} colSpan={2}>
+                  <strong>Total :</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>
+                  <strong>{totalAmount} €</strong>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
+          />
+          <div className="d-flex justify-content-between mt-3">
+            <Button danger icon={<CloseOutlined />} onClick={() => setCart([])}>
+              Annuler
+            </Button>
+            <Button type="primary" icon={<CheckOutlined />}>
+              Valider
+            </Button>
+          </div>
+        </Sider>
+      </Col>
 
       <Col xs={24} sm={12} md={18} lg={18} xl={18}>
         <Layout>
@@ -291,47 +186,46 @@ const Home: React.FC = () => {
           </Content>
         </Layout>
       </Col>
+
       <Modal
-  title="Ajouter au panier"
-  open={isModalOpen}
-  onCancel={handleCancel}
-  footer={[
-    <Button key="cancel" onClick={handleCancel} style={{ borderRadius: "8px" }}>
-      Annuler
-    </Button>,
-    <Button
-      key="submit"
-      type="primary"
-      onClick={handleOk}
-      style={{ backgroundColor: "#52c41a", borderColor: "#52c41a", borderRadius: "8px" }}
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <ShoppingCartOutlined style={{ fontSize: "20px", color: "#1890ff" }} />
+          <span>Ajouter au panier</span>
+        </div>
+      }
+      open={isModalOpen}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="cancel" onClick={handleCancel} style={{ borderRadius: "8px" }}>
+          ❌ Annuler
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          onClick={handleOk}
+          style={{ backgroundColor: "#52c41a", borderColor: "#52c41a", borderRadius: "8px" }}
+        >
+          ✅ Valider
+        </Button>,
+      ]}
     >
-      Valider
-    </Button>,
-  ]}
->
-  <div style={{ textAlign: "center", padding: "10px 0" }}>
-    <Typography.Text strong style={{ fontSize: "16px" }}>
-      {selectedArticle?.name} - {selectedArticle?.price.toFixed(2)} €
-    </Typography.Text>
-  </div>
-
-  <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "15px" }}>
-    <Typography.Text>Quantité :</Typography.Text>
-    <Input
-      value={quantity}
-      onFocus={() => setShowKeyboard(true)}
-      style={{ width: "80px", textAlign: "center" }}
-      readOnly
-    />
-  </div>
-  <NumericKeyboard 
-    onKeyPress={handleKeyPress} 
-    onBackspace={handleBackspace} 
-    onClear={handleClear} 
-  />
-
-</Modal>
-
+      <div style={{ textAlign: "center", padding: "10px 0" }}>
+        <Typography.Text strong style={{ fontSize: "16px" }}>
+          {selectedArticle?.name} - {selectedArticle?.price.toFixed(2)} €
+        </Typography.Text>
+      </div>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "10px", marginTop: "15px" }}>
+        <Typography.Text>Quantité :</Typography.Text>
+        <Input
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+          type="number"
+          style={{ width: "80px", textAlign: "center" }}
+          min={1}
+        />
+      </div>
+    </Modal>
 
     </Row>
   );
