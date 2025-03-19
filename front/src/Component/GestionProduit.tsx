@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Menu, Table, Modal, Form, Input, Select, Upload } from 'antd';
 import { UploadOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import VirtualKeyboard from "./keyboard"; 
 
 const { Option } = Select;
 
@@ -39,6 +40,12 @@ const GestionProduit: React.FC = () => {
   const [current, setCurrent] = useState<'article' | 'categorie'>('article');
   const [modalVisible, setModalVisible] = useState(false);
   const [isArticleForm, setIsArticleForm] = useState(true);
+  const [inputValue, setInputValue] = useState('');
+  const [prixTtc, setPrixTtc] = useState('');
+  const [pointsFid, setPointsFid] = useState('');
+  const [tva, setTva] = useState('');
+  const [showKeyboard, setShowKeyboard] = useState(false); // Ajouté pour afficher ou masquer le clavier
+  const [activeField, setActiveField] = useState<string | null>(null); // Gérer le champ actif pour afficher le clavier
 
   const showModal = (isArticle: boolean) => {
     setIsArticleForm(isArticle);
@@ -47,11 +54,23 @@ const GestionProduit: React.FC = () => {
 
   const handleCancel = () => {
     setModalVisible(false);
+    setShowKeyboard(false);  // Masquer le clavier lorsque le modal se ferme
   };
 
   const handleSubmit = (values: any) => {
     console.log('Form submitted:', values);
     setModalVisible(false);
+  };
+
+  const handleFocus = (field: string) => {
+    setActiveField(field); // Mettre à jour le champ actif
+    if (field === 'pointsFid' || field === 'tva' || field === 'prixTTC' || field === 'designation') {
+      setShowKeyboard(true); // Afficher le clavier pour ces champs
+    }
+  };
+
+  const handleBlur = () => {
+    setShowKeyboard(false); // Masquer le clavier lorsque le champ perd le focus
   };
 
   return (
@@ -97,10 +116,18 @@ const GestionProduit: React.FC = () => {
       <Modal title={isArticleForm ? "Ajouter un Article" : "Ajouter une Catégorie"} open={modalVisible} onCancel={handleCancel} footer={null}>
         <Form layout="vertical" onFinish={handleSubmit}>
           <Form.Item label="Désignation" name="designation" rules={[{ required: true, message: 'Veuillez entrer la désignation' }]}>
-            <Input placeholder="Désignation" />
+            <div>
+              <Input 
+                value={inputValue} 
+                onFocus={() => handleFocus('designation')} // Indiquer que le champ Désignation est actif
+                onChange={(e) => setInputValue(e.target.value)} 
+                placeholder="Désignation" 
+              />
+              {activeField === 'designation' && showKeyboard && <VirtualKeyboard onChange={setInputValue} />}
+            </div>
           </Form.Item>
 
-          {isArticleForm && (
+          {isArticleForm && ( 
             <>
               <Form.Item label="Catégorie" name="category">
                 <Select>
@@ -112,9 +139,48 @@ const GestionProduit: React.FC = () => {
                   <Option value="cat6">BOISSONS</Option>
                 </Select>
               </Form.Item>
-              <Form.Item label="Points Fidélité" name="pointsFid"><Input type="number" placeholder="Points" /></Form.Item>
-              <Form.Item label="TVA" name="tva"><Input type="number" placeholder="TVA" /></Form.Item>
-              <Form.Item label="Prix TTC" name="prixTTC"><Input type="number" placeholder="Prix" /></Form.Item>
+
+              <Form.Item label="Points Fidélité" name="pointsFid">
+                <div>
+                  <Input 
+                    type="text"
+                    value={pointsFid}
+                    onFocus={() => handleFocus('pointsFid')} // Afficher le clavier pour ce champ
+                    onBlur={handleBlur}  // Cacher le clavier quand on quitte ce champ
+                    onChange={(e) => setPointsFid(e.target.value)} 
+                    placeholder="Points Fidélité" 
+                  />
+                  {activeField === 'pointsFid' && showKeyboard && <VirtualKeyboard onChange={setPointsFid} />}
+                </div>
+              </Form.Item>
+
+              <Form.Item label="TVA (%)" name="tva">
+                <div>
+                  <Input 
+                    type="text" 
+                    value={tva} 
+                    onFocus={() => handleFocus('tva')} 
+                    onBlur={handleBlur} 
+                    onChange={(e) => setTva(e.target.value)} 
+                    placeholder="TVA" 
+                  />
+                  {activeField === 'tva' && showKeyboard && <VirtualKeyboard onChange={setTva} />}
+                </div>
+              </Form.Item>
+
+              <Form.Item label="Prix TTC" name="prixTTC">
+                <div>
+                  <Input 
+                    type="text" 
+                    value={prixTtc} 
+                    onFocus={() => handleFocus('prixTTC')} 
+                    onBlur={handleBlur} 
+                    onChange={(e) => setPrixTtc(e.target.value)} 
+                    placeholder="Prix TTC" 
+                  />
+                  {activeField === 'prixTTC' && showKeyboard && <VirtualKeyboard onChange={setPrixTtc} />}
+                </div>
+              </Form.Item>
             </>
           )}
 
@@ -129,13 +195,13 @@ const GestionProduit: React.FC = () => {
           </Form.Item>
 
           <Form.Item style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-  <Button type="primary" htmlType="submit">
-    {isArticleForm ? 'Ajouter Article' : 'Ajouter Catégorie'}
-  </Button>
-  <Button type="default" onClick={() => setModalVisible(false)}>
-    Annuler
-  </Button>
-</Form.Item>
+            <Button type="primary" htmlType="submit">
+              {isArticleForm ? 'Ajouter Article' : 'Ajouter Catégorie'}
+            </Button>
+            <Button type="default" onClick={() => setModalVisible(false)}>
+              Annuler
+            </Button>
+          </Form.Item>
 
         </Form>
       </Modal>
