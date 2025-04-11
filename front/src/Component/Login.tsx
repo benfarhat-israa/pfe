@@ -2,30 +2,34 @@ import React, { useState } from "react";
 import { Input, Button, Form, message } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate } from "react-router-dom";  // Utilisez useNavigate au lieu de useHistory
-
-
+import { useNavigate } from "react-router-dom";
 
 const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();  // Remplacez useHistory par useNavigate
+  const navigate = useNavigate();
 
   const onFinish = async (values: any) => {
     try {
       setLoading(true);
-
+  
       const response = await fetch("http://localhost:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         message.success(data.message);
-        // Redirigez l'utilisateur vers la page d'accueil après une connexion réussie
-        navigate("/home");  // Utilisez navigate pour rediriger
+        localStorage.setItem("role", data.role); // ✅ Sauvegarde du rôle
+  
+        // ✅ Redirection selon le rôle
+        if (data.role === "admin") {
+          navigate("/home");
+        } else {
+          navigate("/home");
+        }
       } else {
         message.error(data.message);
       }
@@ -35,6 +39,7 @@ const AuthPage: React.FC = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="d-flex justify-content-center align-items-center vh-100 bg-light">

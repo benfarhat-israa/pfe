@@ -1,9 +1,6 @@
-import { Layout, Typography, Divider, Menu as AntdMenu, Row, Col } from "antd";
+import { Menu as AntdMenu, Row, Col } from "antd";
 import React from "react";
-import VirtualKeyboard from "./VirtualKeyboard"; // Assurez-vous que le composant VirtualKeyboard est importé
 
-const { Sider } = Layout;
-const { Title } = Typography;
 
 interface MenuPageProps {
   activePage: string;
@@ -11,43 +8,70 @@ interface MenuPageProps {
 }
 
 const MenuPage: React.FC<MenuPageProps> = ({ activePage, setActivePage }) => {
-  // Fonction pour gérer le changement de page
   const handleMenuClick = ({ key }: { key: string }) => {
-    setActivePage(key); // Met à jour la page active
+    setActivePage(key);
   };
 
   return (
-    <Row>
+    <Row justify="center">
       <Col>
-        <Sider
-          width="100%"
-          className="bg-white shadow-sm"
-          style={{ height: "100%", position: "fixed", overflow: "auto", marginLeft: "auto" }}
+        <AntdMenu
+          mode="inline"
+          theme="light"
+          selectedKeys={[activePage]}
+          onClick={handleMenuClick}
+          style={{ width: "100%", border: "none" }}
         >
-          <Title level={4}>Menu</Title>
-          <Divider />
-          <AntdMenu mode="inline" theme="light" selectedKeys={[activePage]} onClick={handleMenuClick}>
-            <AntdMenu.Item key="home" style={{ height: 150 }}>
-              <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home" style={{ width: 50, height: 40 }} />
+          <AntdMenu.Item key="home" style={{ height: 100, textAlign: "center", border: "1px solid #ddd", borderRadius: 10, marginBottom: 8 }}>
+            <Row justify="center">
+              <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home" style={{ width: 30, height: 20 }} />
+            </Row>
+            <Row justify="center" style={{ fontSize: "15px", width: "100%" }}>
               Accueil
-            </AntdMenu.Item>
-            <AntdMenu.Item key="keyboard" style={{ height: 150 }}>
-              <img src="https://cdn-icons-png.flaticon.com/512/40/40144.png" alt="Clavier" style={{ width: 50, height: 40 }} />
-              Clavier
-            </AntdMenu.Item>
-            <AntdMenu.Item key="historique" style={{ height: 150 }}>
-              <img src="https://cdn-icons-png.flaticon.com/512/32/32284.png" alt="Historique" style={{ width: 50, height: 40 }} />
-              Historique
-            </AntdMenu.Item>
-            <AntdMenu.Item key="outil" style={{ height: 150 }}>
-              <img src="https://cdn-icons-png.flaticon.com/512/69/69886.png" alt="Outil" style={{ width: 50, height: 40 }} />
-              Outil
-            </AntdMenu.Item>
-          </AntdMenu>
-        </Sider>
+            </Row>
+          </AntdMenu.Item>
 
-        {/* Afficher le clavier virtuel si "keyboard" est la page active */}
-        {activePage === "keyboard" && <VirtualKeyboard onChange={(input) => console.log(input)} />}
+          <AntdMenu.Item key="keyboard" style={{ height: 100, textAlign: "center", border: "1px solid #ddd", borderRadius: 10, marginBottom: 8 }}>
+            <Row justify="center">
+              <img src="https://cdn-icons-png.flaticon.com/512/40/40144.png" alt="Clavier" style={{ width: 30, height: 20 }} />
+            </Row>
+            <Row justify="center">
+              Clavier
+            </Row>
+          </AntdMenu.Item>
+          <AntdMenu.Item key="Commande" style={{ height: 100, textAlign: "center", border: "1px solid #ddd", borderRadius: 10, marginBottom: 8 }}>
+            <Row justify="center">
+              <img src="https://cdn-icons-png.flaticon.com/512/6948/6948527.png" alt="Historique" style={{ width: 30, height: 20 }} />
+            </Row>
+            <Row justify="center">
+              Commande
+            </Row>
+          </AntdMenu.Item>
+          <AntdMenu.Item key="catalogue" style={{ height: 100, textAlign: "center", border: "1px solid #ddd", borderRadius: 10, marginBottom: 8 }}>
+            <Row justify="center">
+              <img src="https://cdn-icons-png.flaticon.com/512/69/69886.png" alt="Outil" style={{ width: 30, height: 20 }} />
+            </Row>
+            <Row justify="center">
+              Catalogue
+            </Row>
+          </AntdMenu.Item>
+          <AntdMenu.Item key="utilisateur" style={{ height: 100, textAlign: "center", border: "1px solid #ddd", borderRadius: 10, marginBottom: 8 }}>
+            <Row justify="center">
+              <img src="https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small/user-icon-on-transparent-background-free-png.png" alt="Outil" style={{ width: 30, height: 20 }} />
+            </Row>
+            <Row justify="center">
+            Utilisateur
+            </Row>
+          </AntdMenu.Item>
+          <AntdMenu.Item key="client" style={{ height: 100, textAlign: "center", border: "1px solid #ddd", borderRadius: 10, marginBottom: 8 }}>
+            <Row justify="center">
+              <img src="https://cdn-icons-png.flaticon.com/512/686/686317.png" alt="Outil" style={{ width: 30, height: 20 }} />
+            </Row>
+            <Row justify="center">
+            Client
+            </Row>
+          </AntdMenu.Item>
+        </AntdMenu>
       </Col>
     </Row>
   );

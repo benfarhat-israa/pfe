@@ -6,6 +6,8 @@ import HistoriquePage from "./HistoriquePage"; // Import de la page Historique
 import OutilPage from "./OutilPage"; // Import de la page Outil
 import MenuPage from "./MenuPage"; // Import du menu
 import KeyboardPage from "./KeyboardPage"; // Import du clavier
+import GereUtilisateur from "./GereUtilisateur";
+import GestionClient from "./GestionClient";
 
 const POSSystem: React.FC = () => {
   // Récupérer la dernière page active depuis localStorage
@@ -24,8 +26,12 @@ const POSSystem: React.FC = () => {
         {/* Afficher la page active */}
         {activePage === "home" && <HomePage />}
         {activePage === "keyboard" && <KeyboardPage />}
-        {activePage === "historique" && <HistoriquePage />}
-        {activePage === "outil" && <OutilPage />}
+        {activePage === "Commande" && <HistoriquePage />}
+        {activePage === "catalogue" && <OutilPage />}
+        {activePage === "utilisateur" && <GereUtilisateur />}
+        {activePage === "client" && <GestionClient />}
+
+
       </Col>
       <Col xs={24} sm={12} md={2} lg={2} xl={2} style={{ marginLeft: "auto" }}>
         {/* Afficher le menu avec la page active */}

@@ -1,11 +1,17 @@
-import React from 'react'
+import { Row, Col } from "antd";
+import Produits from "./Produits";
 
-const HistoriquePage = () => {
+
+const OutilPage = () => {
+
   return (
-    <div>
-      hhh
-    </div>
-  )
-}
+    <Row>
+      <Col xs={24} sm={24} md={24}>
+        <Produits />
+      </Col>
 
-export default HistoriquePage
+    </Row>
+  );
+};
+
+export default OutilPage;
