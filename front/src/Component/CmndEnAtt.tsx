@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, Typography, Button, Row, Col, Modal } from "antd";
 
 const { Text } = Typography;
@@ -8,16 +8,36 @@ interface CommandesModalProps {
   onClose: () => void;
 }
 
-const commandesAttente = [
+const initialCommandesAttente = [
   { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
   { commandeNum: "202502270003", nombreArticles: 1, totalCommande: 15.5, resteAPayer: 15.5 },
-  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
-  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
-  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
-  { commandeNum: "1524642", nombreArticles: 12, totalCommande: 12345.32, resteAPayer: 10245.2 },
+  { commandeNum: "1321551", nombreArticles: 5, totalCommande: 500.5, resteAPayer: 200.5 },
+  { commandeNum: "4253623", nombreArticles: 7, totalCommande: 7000.0, resteAPayer: 3000.0 },
+  { commandeNum: "4253623", nombreArticles: 7, totalCommande: 7000.0, resteAPayer: 3000.0 },
+  { commandeNum: "4253623", nombreArticles: 7, totalCommande: 7000.0, resteAPayer: 3000.0 },
+
 ];
 
 const CommandesModal: React.FC<CommandesModalProps> = ({ visible, onClose }) => {
+  const [commandesAttente, setCommandesAttente] = useState(initialCommandesAttente);
+
+  const handleContinuer = (commandeNum: string) => {
+    alert(`Continuer la commande n° ${commandeNum}`);
+  };
+
+  const handleValider = (commandeNum: string) => {
+    alert(`Commande n° ${commandeNum} validée`);
+  };
+
+  const handleAnnuler = (commandeNum: string) => {
+    // Remove the selected command from the list
+    const updatedCommandes = commandesAttente.filter(
+      (commande) => commande.commandeNum !== commandeNum
+    );
+    setCommandesAttente(updatedCommandes); // Update state
+    alert(`Commande n° ${commandeNum} supprimée`);
+  };
+
   return (
     <Modal
       title="Commandes en attentes"
@@ -30,9 +50,7 @@ const CommandesModal: React.FC<CommandesModalProps> = ({ visible, onClose }) => 
         {commandesAttente.map((commande, index) => (
           <Col span={12} key={index}>
             <Card>
-              {/* Structure du contenu en deux colonnes */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                {/* Colonne texte */}
                 <div style={{ flex: 1 }}>
                   <Text strong>Cmd num :</Text> {commande.commandeNum} <br />
                   <Text strong>Nbr articles :</Text> {commande.nombreArticles} <br />
@@ -40,30 +58,33 @@ const CommandesModal: React.FC<CommandesModalProps> = ({ visible, onClose }) => 
                   <Text strong>Reste à payer :</Text> <Text>{commande.resteAPayer.toFixed(2)} €</Text> <br />
                 </div>
 
-                {/* Colonne boutons */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginLeft: "15px" }}>
                   <Button
                     type="primary"
                     ghost
                     style={{
                       backgroundColor: "transparent",
-                      borderColor: "#1890ff",
-                      color: "#1890ff",
+                      borderColor: "#0050b3",
+                      color: "#0050b3",
                     }}
+                    onClick={() => handleContinuer(commande.commandeNum)}
                   >
                     Continuer
                   </Button>
+
                   <Button
                     type="primary"
                     ghost
                     style={{
                       backgroundColor: "transparent",
-                      borderColor: "#52c41a",
-                      color: "#52c41a",
+                      borderColor: "#009A24",
+                      color: "#009A24",
                     }}
+                    onClick={() => handleValider(commande.commandeNum)}
                   >
                     Valider
                   </Button>
+
                   <Button
                     type="primary"
                     ghost
@@ -73,6 +94,7 @@ const CommandesModal: React.FC<CommandesModalProps> = ({ visible, onClose }) => 
                       borderColor: "#ff4d4f",
                       color: "#ff4d4f",
                     }}
+                    onClick={() => handleAnnuler(commande.commandeNum)}
                   >
                     Annuler
                   </Button>
@@ -92,7 +114,7 @@ const CommandesModal: React.FC<CommandesModalProps> = ({ visible, onClose }) => 
 };
 
 const App: React.FC = () => {
-  const [visible, setVisible] = React.useState<boolean>(true);
+  const [visible, setVisible] = useState<boolean>(true);
 
   return (
     <div style={{ padding: 20 }}>

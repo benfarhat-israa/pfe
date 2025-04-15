@@ -5,6 +5,8 @@ import GestionProduit from "./Component/GestionProduit";
 import CmndEnAtt from "./Component/CmndEnAtt";
 import CategoriesForm from "./Component/CategoriesForm";
 import Produits from "./Component/Produits";
+import Paiment from "./Component/paiment";
+
 
 const AppRoutes = () => {
   return useRoutes([
@@ -12,6 +14,9 @@ const AppRoutes = () => {
     { path: "/home", element: <Home /> },
     { path: "/gestion-produit", element: <GestionProduit /> },
     { path: "/liste-commande", element: <CmndEnAtt /> },
+    {path : "/gestion-produit",element:<GestionProduit/>},
+    {path : "/liste-commande",element:<CmndEnAtt/>},
+    { path: "/paiment", element: <Paiment /> },
 
 
     { path: "/ajouter-categorie", element: <CategoriesForm /> },
