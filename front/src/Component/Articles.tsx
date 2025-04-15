@@ -24,11 +24,12 @@ interface Produit {
     designation: string;
     image?: string;
     tva: number;
-    prixttc: number;
+    pricttc: number;
     couleur?: string;
     category: string;
-    pointsfid: number;
+    pointsFid: number;
 }
+
 
 const Articles: React.FC = () => {
     const [produits, setProduits] = useState<Produit[]>([]);
@@ -48,12 +49,13 @@ const Articles: React.FC = () => {
         try {
             const res = await fetch("http://localhost:5000/api/produits");
             const data = await res.json();
+            console.log("Produits reçus:", data); // ⬅️ Ajoute ceci
             setProduits(data);
         } catch (err) {
             message.error("Erreur lors du chargement des produits.");
         }
     };
-
+    
     const chargerCategories = async () => {
         try {
             const res = await fetch("http://localhost:5000/api/categories");
@@ -175,10 +177,16 @@ const Articles: React.FC = () => {
         },
         {
             title: "Prix TTC",
-            dataIndex: "prixttc",
-            key: "prixttc",
+            dataIndex: "pricttc",
+            key: "pricttc",
             render: (prix: any) => parseFloat(prix).toFixed(2),
         },
+        {
+            title: "Pts Fidélité",
+            dataIndex: "pointsFid",
+            key: "pointsFid",
+        },
+        
         {
             title: "Couleur",
             dataIndex: "couleur",
@@ -195,7 +203,6 @@ const Articles: React.FC = () => {
             ),
         },
         { title: "Catégorie", dataIndex: "category", key: "category" },
-        { title: "Pts Fidélité", dataIndex: "pointsfid", key: "pointsfid" },
         {
             title: "Actions",
             key: "actions",
@@ -254,7 +261,7 @@ const Articles: React.FC = () => {
                     <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
                         <Input />
                     </Form.Item>
-                    <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true }]}>
+                    <Form.Item name="pricttc" label="Prix TTC" rules={[{ required: true }]}>
                         <Input type="number" />
                     </Form.Item>
                     <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
@@ -296,7 +303,7 @@ const Articles: React.FC = () => {
                     <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
                         <Input />
                     </Form.Item>
-                    <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true }]}>
+                    <Form.Item name="pricttc" label="Prix TTC" rules={[{ required: true }]}>
                         <Input type="number" />
                     </Form.Item>
                     <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
@@ -305,7 +312,7 @@ const Articles: React.FC = () => {
                     <Form.Item name="couleur" label="Couleur">
                         <Input type="color" />
                     </Form.Item>
-                    <Form.Item name="pointsfid" label="Points Fidélité">
+                    <Form.Item name="pointsFid" label="Points Fidélité">
                         <Input type="number" />
                     </Form.Item>
                     <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>

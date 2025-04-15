@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout, Button, Table, Card, Row, Col, Typography, Space, Modal, Input, InputNumber, message } from "antd";
 import { CheckOutlined, CloseOutlined, PlusOutlined, MinusOutlined, CreditCardOutlined, EuroOutlined } from "@ant-design/icons";
 import ClientInfo from "./ClientInfo";
@@ -9,87 +9,80 @@ interface CartItem {
   key: number;
   name: string;
   quantity: number;
-  price: number;
+  prixTTC: number;
+}
+interface Categorie {
+  id: number;
+  designation: string;
 }
 
-// Catégories disponibles
-const categories = [
-  { id: 1, name: "ENTRÉE" },
-  { id: 2, name: "PLATS" },
-  { id: 3, name: "SAUCES" },
-  { id: 4, name: "SUPPLÉMENTS" },
-  { id: 5, name: "DESSERTS" },
-  { id: 6, name: "BOISSONS" }
-];
-
-// Structure des produits par catégorie
-const articles = [
-  { id: 1, name: "Salade César", price: 5.5, img: "https://images.ricardocuisine.com/services/recipes/8440.jpg", id_category: 1 },
-  { id: 2, name: "Soupe de légumes", price: 4.5, img: "https://img.cuisineaz.com/1024x576/2022/07/11/i184647-soupe-legumes.jpeg", id_category: 1 },
-  { id: 3, name: "Burger", price: 8.9, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLvBSYpdrmjC6s63P5oWgTiU4gPl36dkdVfQ&s", id_category: 2 },
-  { id: 4, name: "Pasta Bolognese", price: 7.5, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTu2FEm-L43OU36h8exife2sBQa3GAHADfnYg&s", id_category: 2 },
-  { id: 5, name: "Ketchup", price: 1.2, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi9-cAi_ndQro_LH-Gu4Uo4mGZ147UEmnddToB5uRLl3SrOvE-THCaNOsNusxN0om4WsE&usqp=CAU", id_category: 3 },
-  { id: 6, name: "Mayonnaise", price: 1.5, img: "https://bakeitwithlove.com/wp-content/uploads/2023/06/homemade-mayonnaise-sq.jpg", id_category: 3 },
-  { id: 7, name: "Fromage", price: 2.0, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8MUcZ_-poNfVMUZggOxtQdlvMiOj_9KUkY36-I0uedgGqjTaIlyKTpkm-F2Cr8rgVhp4&usqp=CAU", id_category: 4 },
-  { id: 8, name: "Frites", price: 2.5, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDqhVoEhsXTqI-0i9wY0FXutIdebs4mQ2GOM_K0v51RSlFtyKAkZ8g1xtbZ4Fb2_AEuc0&usqp=CAU", id_category: 4 },
-  { id: 9, name: "Fondant", price: 4.9, img: "https://empreintesucree.fr/wp-content/uploads/2018/02/1-fondant-chocolat-recette-patisserie-empreinte-sucree-1.jpg.webp", id_category: 5 },
-  { id: 10, name: "Cheesecake", price: 4.9, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSykwJstGcspSzNfsFXX7Jdlu51G-uSDQSOYg&s", id_category: 5 },
-  { id: 11, name: "Tarte Citron", price: 5.2, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4R9IehC8f6gx_jt38HOa-DQP4YWzuO36lqw&s", id_category: 5 },
-  { id: 12, name: "Coca-Cola", price: 2.0, img: "https://images.7sur7.be/ZmRmZjI3ZDMwZDBiYzQ2OTgyMTgvZGlvLzIzNDU0ODEwMC9maWxsLzEyMDAvNjc1/illustration", id_category: 6 },
-  { id: 13, name: "Jus d'orange", price: 2.5, img: "https://sf1.topsante.com/wp-content/uploads/topsante/2023/10/pourquoi-faut-arreter-verre-jus-orange-matin.jpeg", id_category: 6 }
-];
+interface Produit {
+  id: number;
+  designation: string;
+  prixTTC: number;
+  tva: number;
+  couleur: string;
+  image: string;
+  pointsFid: number;
+  category: number | Categorie;
+}
 const Home: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState<{ name: string; price: number } | null>(null);
+  const [selecteProduit, setSelecteProduit] = useState<{ name: string; prixTTC: number } | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [categories, setCategories] = useState<Categorie[]>([]);
+  const [produits, setProduits] = useState<Produit[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [filteredProduits, setFilteredProduits] = useState<Produit[]>([]);
 
-  const showModal = (article: { name: string; price: number }) => {
-    setSelectedArticle(article);
+  const showModal = (produit: { name: string; prixTTC: number }) => {
+    setSelecteProduit(produit); // Sélectionner le produit
     setIsModalOpen(true);
+    setQuantity(1); // Réinitialiser la quantité
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
     setQuantity(1);
   };
-
   const handleOk = () => {
-    if (selectedArticle) {
-      addToCart(selectedArticle.name, selectedArticle.price, quantity);
+    if (selecteProduit) {
+      // Ajouter le produit au panier
+      addToCart(selecteProduit.name, selecteProduit.prixTTC, quantity);
     }
-    handleCancel();
+    handleCancel(); // Fermer la modale après validation
   };
 
-  const addToCart = (name: string, price: number, quantity: number): void => {
+  const addToCart = (name: string, prixTTC: number, quantity: number): void => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.name === name);
       if (existingItem) {
+        // Si le produit est déjà dans le panier, mettre à jour la quantité
         return prevCart.map((item) =>
           item.name === name
-            ? { ...item, quantity: item.quantity + quantity, price: item.price + price * quantity }
+            ? { ...item, quantity: item.quantity + quantity, prixTTC: (item.prixTTC / item.quantity) * (item.quantity + quantity) }
             : item
         );
       }
-      return [...prevCart, { key: prevCart.length + 1, name, quantity, price: price * quantity }];
+      // Sinon, ajouter le nouveau produit
+      return [
+        ...prevCart,
+        { key: prevCart.length + 1, name, quantity, prixTTC: prixTTC * quantity },
+      ];
     });
   };
-
-
-
   const updateCartQuantity = (key: number, newQuantity: number) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item.key === key ? { ...item, quantity: newQuantity, price: (item.price / item.quantity) * newQuantity } : item
+        item.key === key ? { ...item, quantity: newQuantity, prixTTC: (item.prixTTC / item.quantity) * newQuantity } : item
       )
     );
   };
 
   const totalAmount: string = cart
-    .reduce((sum, item) => sum + item.price, 0)
+    .reduce((sum, item) => sum + (item.prixTTC || 0), 0) // Vérifie que 'item.prixTTC' est défini
     .toFixed(2);
-
 
   const columns = [
     {
@@ -107,21 +100,74 @@ const Home: React.FC = () => {
     { title: "DÉSIGNATION", dataIndex: "name", key: "name" },
     {
       title: "PRIX",
-      dataIndex: "price",
-      key: "price",
+      dataIndex: "prixTTC",
+      key: "prixTTC",
       render: (text: number) => `${text.toFixed(2)} €`,
     },
   ];
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
 
-
   const [pendingOrders, setPendingOrders] = useState<{ id: number; items: CartItem[]; total: string }[]>(() => {
     const savedOrders = localStorage.getItem("pendingOrders");
     return savedOrders ? JSON.parse(savedOrders) : [];
   });
+  // pour le filtrage des produits par catégorie
+  const handleCategorySelect = (designation: string) => {
+    setSelectedCategory(designation);
+  };
+  
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/categories");
+        const data = await response.json();
+        console.log("Catégories récupérées :", data); // Vérification
+        setCategories(data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des catégories :", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/produits")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Données reçues des produits :", data); // 👈 Ajout ici pour voir les produits
+  
+        const normalized = data.map((p: Produit) => ({
+          ...p,
+          category: typeof p.category === 'object' ? p.category.id : p.category,
+        }));
+  
+        console.log("Produits normalisés :", normalized); // Vérifier si la catégorie est bien un id et non un objet
+  
+        setProduits(normalized);
+        setFilteredProduits(normalized);
+      })
+      .catch((err) => console.error("Erreur de chargement des produits :", err));
+  }, []);
+  
+  useEffect(() => {
+    if (selectedCategory === null) {
+      setFilteredProduits(produits); // Afficher tous les produits si aucune catégorie n'est sélectionnée
+    } else {
+      const filtered = produits.filter((produit) => {
+        console.log("Comparaison produit.category et selectedCategory :", produit.category, selectedCategory); // Log des valeurs comparées
+        return Number(produit.category) === Number(selectedCategory); // Forcer la comparaison de type
+      });
+      setFilteredProduits(filtered); // Mettre à jour les produits filtrés
+    }
+  }, [selectedCategory, produits]);
+  
+  
+  console.log("Catégorie sélectionnée :", selectedCategory);
+  console.log("Produits filtrés :", filteredProduits);
 
 
-  const filteredArticles = articles.filter((article) => article.id_category === selectedCategory);
 
   return (
     <Row>
@@ -194,7 +240,7 @@ const Home: React.FC = () => {
               <Button
                 icon={<CloseOutlined />}
                 onClick={() => setCart([])}
-                style={{ height: "50px", backgroundColor: "#ff4d4d", color: "white", flex: 1 ,fontSize:"10px"}}
+                style={{ height: "50px", backgroundColor: "#ff4d4d", color: "white", flex: 1, fontSize: "10px" }}
               >
                 Annuler
               </Button>
@@ -207,7 +253,7 @@ const Home: React.FC = () => {
                   backgroundColor: selectedPayment ? "#009900" : "#ccc",
                   color: "white",
                   flex: 1,
-                  fontSize:"10px",
+                  fontSize: "10px",
                   cursor: selectedPayment ? "pointer" : "not-allowed",
                 }}
                 onClick={() => {
@@ -224,7 +270,7 @@ const Home: React.FC = () => {
 
               <Button
                 type="primary"
-                style={{ height: "50px", backgroundColor: "#798686", color: "white", flex: 1 ,fontSize:"10px"}}
+                style={{ height: "50px", backgroundColor: "#798686", color: "white", flex: 1, fontSize: "10px" }}
               >
                 Mise en attente
               </Button>
@@ -240,14 +286,22 @@ const Home: React.FC = () => {
             <Space direction="vertical" style={{ width: "100%" }} size="middle">
               <Row gutter={[16, 16]} justify="center">
                 {categories.map((category) => (
-                  <Col key={category.id} span={8} style={{ display: "flex", justifyContent: "center", marginTop: "10px" }}>
+                  <Col
+                    key={category.id}
+                    span={8}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginTop: "10px",
+                    }}
+                  >
                     <Button
-                      type={category.id === selectedCategory ? "default" : "default"} // Pas besoin de changer le type, on modifie juste la bordure
-                      onClick={() => setSelectedCategory(category.id)}
+                      type="default"
+                      onClick={() => handleCategorySelect(category.designation)}
                       style={{
-                        borderColor: category.id === selectedCategory ? "#669999" : "gray", // Modifier la bordure en bleu
-                        color: category.id === selectedCategory ? "black" : "black",  // Laisser la couleur du texte inchangée
-                        backgroundColor: "white", // Laisser le fond en blanc
+                        borderColor: category.designation === selectedCategory ? "#669999" : "gray",
+                        color: "black",
+                        backgroundColor: "white",
                         width: "100%",
                         height: "40px",
                         fontSize: "14px",
@@ -256,39 +310,44 @@ const Home: React.FC = () => {
                         boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
                       }}
                     >
-                      {category.name}
+                      {category.designation}
                     </Button>
+
                   </Col>
                 ))}
               </Row>
-
             </Space>
-
-
             <Row style={{ marginTop: 20 }}>
-              {filteredArticles.map((article) => (
-                <Col xs={24} sm={12} md={8} lg={8} xl={8} key={article.id}>
-                  <Card
-                    hoverable
-                    style={{ height: "100%" }}
-                    cover={
-                      <img
-                        alt={article.name}
-                        src={article.img}
-                        style={{
-                          width: "100%",
-                          height: "150px",
-                          objectFit: "cover",
-                        }}
+              {filteredProduits.length > 0 ? (
+                filteredProduits.map((produit) => (
+                  <Col xs={24} sm={12} md={8} lg={8} xl={8} key={produit.id}>
+                    <Card
+                      hoverable
+                      style={{ height: "100%" }}
+                      cover={
+                        <img
+                          alt={produit.designation}
+                          src={`http://localhost:5000/uploads/${produit.image}`}
+                          style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                        />
+                      }
+                      onClick={() => showModal({
+                        name: produit.designation,
+                        prixTTC: produit.prixTTC
+                      })}
+                    >
+                      <Card.Meta
+                        title={produit.designation}
+                        description={produit.prixTTC ? `${produit.prixTTC.toFixed(2)} €` : "Prix non disponible"}
                       />
-                    }
-                    onClick={() => showModal(article)}
-                  >
-                    <Card.Meta title={article.name} description={`${article.price.toFixed(2)} €`} />
-                  </Card>
+                    </Card>
+                  </Col>
+                ))
+              ) : (
+                <Col span={24} style={{ textAlign: "center", padding: "20px" }}>
+                  <Typography.Text type="secondary">Aucun produit disponible pour cette catégorie</Typography.Text>
                 </Col>
-
-              ))}
+              )}
             </Row>
 
           </Content>
@@ -300,7 +359,7 @@ const Home: React.FC = () => {
         open={isModalOpen}
         onCancel={handleCancel}
         footer={
-          <div style={{ textAlign: "center" }}> {/* Centre le bouton */}
+          <div style={{ textAlign: "center" }}>
             <Button
               key="submit"
               type="primary"
@@ -314,7 +373,9 @@ const Home: React.FC = () => {
       >
         <div style={{ textAlign: "center", padding: "10px 0" }}>
           <Typography.Text strong style={{ fontSize: "16px" }}>
-            {selectedArticle?.name} - {selectedArticle?.price.toFixed(2)} €
+            {selecteProduit?.name} - {selecteProduit?.prixTTC && !isNaN(selecteProduit?.prixTTC)
+              ? selecteProduit?.prixTTC.toFixed(2) + " €"
+              : "Prix non disponible"}
           </Typography.Text>
         </div>
         <div
@@ -327,6 +388,7 @@ const Home: React.FC = () => {
           }}
         >
           <Typography.Text>Quantité :</Typography.Text>
+
           <Button icon={<MinusOutlined />} onClick={() => setQuantity(Math.max(1, quantity - 1))} />
           <Input
             value={quantity}
@@ -338,6 +400,7 @@ const Home: React.FC = () => {
           <Button icon={<PlusOutlined />} onClick={() => setQuantity(quantity + 1)} />
         </div>
       </Modal>
+
 
     </Row>
   );

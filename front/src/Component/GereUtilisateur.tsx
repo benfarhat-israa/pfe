@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Form, Input, message, Popconfirm } from "antd";
+import {
+  Table,
+  Button,
+  Form,
+  Input,
+  message,
+  Popconfirm,
+  Modal,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 
-// Structure des utilisateurs
 interface Utilisateur {
   id: number;
   nom: string;
@@ -17,6 +24,7 @@ const UsersPage: React.FC = () => {
   const [utilisateurs, setUtilisateurs] = useState<Utilisateur[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,28 +54,30 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  const onFinish = async (values: { nom: string; email: string; password: string }) => {
+  const onFinish = async (values: {
+    nom: string;
+    email: string;
+    password: string;
+  }) => {
     try {
       if (isEditing && editingUserId !== null) {
-        // 🔁 Mise à jour d’un utilisateur existant
-        const response = await fetch(`http://localhost:5000/api/utilisateurs/${editingUserId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...values, role: "user" }),
-        });
+        const response = await fetch(
+          `http://localhost:5000/api/utilisateurs/${editingUserId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...values, role: "user" }),
+          }
+        );
 
         if (!response.ok) throw new Error();
 
         message.success("Utilisateur mis à jour !");
-        setIsEditing(false);
-        setEditingUserId(null);
       } else {
-        // ➕ Ajout d’un nouvel utilisateur
-        const userToAdd = { ...values, role: "user" };
         const response = await fetch("http://localhost:5000/api/utilisateurs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userToAdd),
+          body: JSON.stringify({ ...values, role: "user" }),
         });
 
         if (!response.ok) throw new Error();
@@ -77,6 +87,9 @@ const UsersPage: React.FC = () => {
 
       form.resetFields();
       fetchUtilisateurs();
+      setIsEditing(false);
+      setEditingUserId(null);
+      setModalVisible(false);
     } catch (error) {
       message.error("Erreur lors de l’enregistrement de l’utilisateur");
     }
@@ -86,16 +99,11 @@ const UsersPage: React.FC = () => {
     form.setFieldsValue({
       nom: user.nom,
       email: user.email,
-      password: "", // Mot de passe vide, il faudra le resaisir
+      password: "",
     });
     setIsEditing(true);
     setEditingUserId(user.id);
-  };
-
-  const annulerModification = () => {
-    setIsEditing(false);
-    setEditingUserId(null);
-    form.resetFields();
+    setModalVisible(true);
   };
 
   const supprimerUtilisateur = async (id: number) => {
@@ -134,7 +142,7 @@ const UsersPage: React.FC = () => {
             shape="circle"
           />
           <Popconfirm
-            title="Supprimer ce client ?"
+            title="Supprimer cet utilisateur ?"
             onConfirm={() => supprimerUtilisateur(record.id)}
             okText="Oui"
             cancelText="Non"
@@ -155,7 +163,39 @@ const UsersPage: React.FC = () => {
     <div className="container mt-5">
       <h2 className="text-center mb-4">Gestion des utilisateurs</h2>
 
-      <div className="shadow p-4 mb-4 bg-white rounded">
+      <div className="text-end mb-3">
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            form.resetFields();
+            setIsEditing(false);
+            setEditingUserId(null);
+            setModalVisible(true);
+          }}
+        >
+          Ajouter un utilisateur
+        </Button>
+      </div>
+
+      <Table
+        dataSource={utilisateurs}
+        columns={columns}
+        rowKey="id"
+        pagination={{ pageSize: 5 }}
+      />
+
+      <Modal
+        title={isEditing ? "Modifier l'utilisateur" : "Ajouter un utilisateur"}
+        visible={modalVisible}
+        onCancel={() => {
+          setModalVisible(false);
+          setIsEditing(false);
+          form.resetFields();
+        }}
+        footer={null}
+        destroyOnClose
+      >
         <Form layout="vertical" onFinish={onFinish} form={form}>
           <Form.Item
             label="Nom"
@@ -184,27 +224,23 @@ const UsersPage: React.FC = () => {
             <Input.Password placeholder="Mot de passe" />
           </Form.Item>
 
-          <Form.Item>
+          <Form.Item className="text-end">
             <Button type="primary" htmlType="submit" className="me-2">
-              {isEditing ? "Mettre à jour" : "Ajouter un utilisateur"}
+              {isEditing ? "Mettre à jour" : "Ajouter"}
             </Button>
-            {isEditing && (
-              <Button onClick={annulerModification} danger>
-                Annuler
-              </Button>
-            )}
+            <Button
+              onClick={() => {
+                setModalVisible(false);
+                setIsEditing(false);
+                form.resetFields();
+              }}
+              danger
+            >
+              Annuler
+            </Button>
           </Form.Item>
         </Form>
-      </div>
-
-      <div className="shadow p-4 bg-white rounded">
-        <Table
-          dataSource={utilisateurs}
-          columns={columns}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-        />
-      </div>
+      </Modal>
     </div>
   );
 };
