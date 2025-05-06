@@ -9,7 +9,6 @@ const OutilPage = () => {
       <Col xs={24} sm={24} md={24}>
         <Produits />
       </Col>
-
     </Row>
   );
 };

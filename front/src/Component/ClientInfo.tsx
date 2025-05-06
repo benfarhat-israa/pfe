@@ -1,22 +1,45 @@
-import { useState } from "react";
-import { Card, Row, Col, Form, Input, Button, Space } from "antd";
+import { useState, useEffect } from "react";
+import { Card, Row, Col, Form, Input, Button, Space, Modal } from "antd";
 import { UserOutlined, PhoneOutlined, HomeOutlined } from "@ant-design/icons";
 import VirtualKeyboard from "./VirtualKeyboard";
 
-const ClientInfo = () => {
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [name, setName] = useState<string>("");
-  const [firstName, setFirstName] = useState<string>("");
-  const [address, setAddress] = useState<string>("");
-  const [currentView, setCurrentView] = useState<string>("emporter");
+interface Client {
+  nom: string;
+  prenom: string;
+  telephone: string;
+  adresse: string;
+  pointsfidelite: number;
+  cardfidelity: string;
+}
+
+interface ClientInfoProps {
+  onClientReady: (client: Client) => void;
+  infoClient: {
+    phoneNumber: string;
+    name: string;
+    firstName: string;
+    address: string;
+    pointsfidelite: number;
+    cardfidelity: string;
+  };
+  setInfoClient: React.Dispatch<React.SetStateAction<{
+    phoneNumber: string;
+    name: string;
+    firstName: string;
+    address: string;
+    pointsfidelite: number;
+    cardfidelity: string;
+  }>>;
+}
+
+const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setInfoClient }) => {
+  const [currentView, setCurrentView] = useState("emporter");
   const [activeField, setActiveField] = useState<string | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
 
-  const handleInputChange = (value: string) => {
-    if (activeField === "phone") setPhoneNumber(value);
-    else if (activeField === "name") setName(value);
-    else if (activeField === "firstName") setFirstName(value);
-    else if (activeField === "address") setAddress(value);
+  // Génère un numéro de carte fidélité à 13 chiffres
+  const generateFidelityCardNumber = () => {
+    return `${Math.floor(1000000000000 + Math.random() * 9000000000000)}`;
   };
 
   const handleFocus = (fieldName: string) => {
@@ -24,36 +47,101 @@ const ClientInfo = () => {
     setShowKeyboard(true);
   };
 
+  const handleChange = (key: string, value: any) => {
+    setInfoClient({ ...infoClient, [key]: value });
+  };
+
+  const getInfoClient = async (phone_number: any) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/clients/${phone_number}`);
+      if (response.ok) {
+        const existingClient: Client = await response.json();
+        setInfoClient({
+          phoneNumber: existingClient.telephone,
+          name: existingClient.nom,
+          firstName: existingClient.prenom,
+          address: existingClient.adresse,
+          pointsfidelite: existingClient.pointsfidelite || 0,
+          cardfidelity: existingClient.cardfidelity,
+        });
+        setShowKeyboard(false);
+
+        // onClientReady(existingClient);
+      } else if (response.status === 404) {
+        // Nouveau client → on attend que les champs nécessaires soient remplis
+        if (!infoClient.name || (currentView === "livraison" && (!infoClient.firstName || !infoClient.address))) {
+          return;
+        }
+
+        const newClient: Client = {
+          nom: infoClient.name,
+          prenom: infoClient.firstName,
+          telephone: infoClient.phoneNumber,
+          adresse: infoClient.address,
+          pointsfidelite: 0,
+          cardfidelity: generateFidelityCardNumber(),
+        };
+
+        const addResponse = await fetch("http://localhost:5000/api/clients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newClient),
+        });
+
+        if (addResponse.ok) {
+          const data = await addResponse.json();
+          Modal.success({
+            title: "Client ajouté",
+            content: `Numéro de carte fidélité : ${data.cardfidelity}`,
+          });
+          setInfoClient({
+            phoneNumber: data.telephone,
+            name: data.nom,
+            firstName: data.prenom,
+            address: data.adresse,
+            pointsfidelite: 0,
+            cardfidelity: data.cardfidelity,
+          });
+          setShowKeyboard(false);
+          onClientReady(data);
+        } else {
+          Modal.error({
+            title: "Erreur",
+            content: "Impossible d’ajouter le client.",
+          });
+        }
+      }
+    } catch (error) {
+      Modal.error({
+        title: "Erreur réseau",
+        content: "Impossible de contacter le serveur.",
+      });
+    }
+  }
+
+  useEffect(() => {
+  }, [currentView]);
+
   return (
-    <Card
-      style={{
-        padding: "20px",
-        borderRadius: "50px",
-        backgroundColor: "#f9f9f9",
-        marginLeft: "10px"
-      }}
-    >
-      {/* Boutons de sélection de vue */}
-      <Space style={{ marginBottom: 20 }}>
+    <Card style={{ padding: 20, borderRadius: 20, marginLeft: 10, backgroundColor: "#f9f9f9", height: "260px" }}>
+      <Space style={{ marginBottom: 10, marginTop: "-40px" }}>
         {["emporter", "livraison", "surplace"].map((view) => (
           <Button
             key={view}
+            onClick={() => setCurrentView(view)}
             style={{
-              borderRadius: "25px",
-              width: "100px",
-              height: "40px",
+              borderRadius: 25,
+              width: 120,
+              height: 50,
               backgroundColor: currentView === view ? "gray" : "white",
               color: currentView === view ? "white" : "black",
-              borderColor: currentView === view ? "gray" : "black",
             }}
-            onClick={() => setCurrentView(view)}
           >
             {view.charAt(0).toUpperCase() + view.slice(1)}
           </Button>
         ))}
       </Space>
 
-      {/* Formulaire */}
       <Form layout="vertical">
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={6}>
@@ -61,7 +149,8 @@ const ClientInfo = () => {
               <Input
                 prefix={<UserOutlined />}
                 placeholder="Nom"
-                value={name}
+                value={infoClient.name}
+                onChange={(e) => handleChange("name", e.target.value)}
                 onFocus={() => handleFocus("name")}
               />
             </Form.Item>
@@ -71,12 +160,19 @@ const ClientInfo = () => {
             <Form.Item label="Téléphone">
               <Input
                 prefix={<PhoneOutlined />}
-                type="tel"
                 placeholder="Numéro"
-                value={phoneNumber}
-                maxLength={10}
+                maxLength={8}
+                value={infoClient.phoneNumber}
+                onChange={(e) => {
+                  const onlyDigits = e.target.value.replace(/\D/g, ""); // Retire tout caractère non numérique
+                  handleChange("phoneNumber", onlyDigits);
+                  if (onlyDigits.length === 8) {
+                    getInfoClient(onlyDigits);
+                  }
+                }}
                 onFocus={() => handleFocus("phone")}
               />
+
             </Form.Item>
           </Col>
 
@@ -87,7 +183,8 @@ const ClientInfo = () => {
                   <Input
                     prefix={<UserOutlined />}
                     placeholder="Prénom"
-                    value={firstName}
+                    value={infoClient.firstName}
+                    onChange={(e) => handleChange("firstName", e.target.value)}
                     onFocus={() => handleFocus("firstName")}
                   />
                 </Form.Item>
@@ -98,85 +195,31 @@ const ClientInfo = () => {
                   <Input
                     prefix={<HomeOutlined />}
                     placeholder="Adresse"
-                    value={address}
+                    value={infoClient.address}
+                    onChange={(e) => handleChange("address", e.target.value)}
                     onFocus={() => handleFocus("address")}
                   />
                 </Form.Item>
               </Col>
             </>
           )}
+
+          <Input
+            disabled
+            value={infoClient.cardfidelity}
+            prefix={<HomeOutlined />}
+            placeholder="Numéro de carte fidélité"
+          />
         </Row>
-
-        <Button
-          type="primary"
-          style={{
-            backgroundColor: "#4CAF50", // Vert élégant
-            borderColor: "#4CAF50",
-            color: "white",
-            fontWeight: "bold",
-            fontSize: "16px",
-            padding: "10px 24px",
-            borderRadius: "25px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            transition: "all 0.3s ease",
-          }}
-          onMouseOver={e => {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#45A049";
-          }}
-          onMouseOut={e => {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#4CAF50";
-          }}
-          onClick={async () => {
-            try {
-              const client = {
-                nom: name,
-                prenom: firstName,
-                telephone: phoneNumber,
-                adresse: address,
-                pointsFidelite: 0,
-              };
-
-              const response = await fetch("http://localhost:5000/api/clients", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(client),
-              });
-
-              if (response.ok) {
-                const data = await response.json();
-                console.log("Client ajouté :", data);
-                setName("");
-                setFirstName("");
-                setPhoneNumber("");
-                setAddress("");
-                setShowKeyboard(false);
-                alert("Client ajouté avec succès !");
-              } else {
-                const error = await response.json();
-                console.error("Erreur:", error);
-                alert("Erreur lors de l'ajout du client.");
-              }
-            } catch (error) {
-              console.error("Erreur réseau :", error);
-              alert("Impossible d'envoyer les données.");
-            }
-          }}
-        >
-          Ajouter le client
-        </Button>
-
       </Form>
 
-      {/* Clavier Virtuel dans la même Card */}
-      {showKeyboard && (
-        <div style={{ marginTop: "20px" }}>
-          <VirtualKeyboard
-            visible={showKeyboard}
-            onChange={handleInputChange}
-            onClose={() => setShowKeyboard(false)}
-          />
-        </div>
-      )}
+      {/* {showKeyboard && (
+        <VirtualKeyboard
+          visible={showKeyboard}
+          onChange={handleInputChange}
+          onClose={() => setShowKeyboard(false)}
+        />
+      )} */}
     </Card>
   );
 };

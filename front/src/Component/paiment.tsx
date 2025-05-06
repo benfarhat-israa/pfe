@@ -1,206 +1,392 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Typography, Space, Input } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 import Split from 'react-split';
-import { Button, Space, Typography, Input, Modal } from 'antd';
-import { DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 
-const App: React.FC = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+const commandesValide: any[] = [];
+const panier: any[] = [];
+
+interface Item {
+  key: string;
+  name: string;
+  quantity: number;
+  prixttc: number;
+}
+
+interface Commande {
+  commandeNum: string;
+  nombreArticles: number;
+  totalCommande: number;
+  resteAPayer: number;
+  items: Item[];
+}
+
+interface PaiementModalProps {
+  open: boolean;
+  onClose: () => void;
+  total: number;
+  onSuccess?: () => void;
+  panier: Item[]; // <-- AJOUTER ICI
+  infoClient: {
+    phoneNumber: string;
+    name: string;
+    firstName: string;
+    address: string;
+    pointsfidelite: number;
+    cardfidelity: string;
+  };
+}
+const PaiementModal: React.FC<PaiementModalProps> = ({
+  open,
+  onClose,
+  total,
+  onSuccess,
+  panier,
+  infoClient
+}) => {
+
   const [inputValue, setInputValue] = useState('');
   const [paidAmount, setPaidAmount] = useState(0);
   const [totalOrder, setTotalOrder] = useState<number | null>(null);
   const [remainingAmount, setRemainingAmount] = useState<number | null>(null);
-  const [operation, setOperation] = useState<string | null>(null);
+  const [changeToReturn, setChangeToReturn] = useState<number | null>(null);
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [pointsUtilises, setPointsUtilises] = useState(0);
+  const [conversionRate, setConversionRate] = useState<number>(0.1); // Valeur par défaut
+  const initialTotal = total;
 
-  const showModal = () => setIsModalVisible(true);
-  const handleCancel = () => setIsModalVisible(false);
+  const viderPanier = () => {
+    panier.length = 0;
+  };
+  
 
-  const handleButtonClick = (value: string) => {
+  const handleButtonClick = (value: string) =>
     setInputValue((prev) => prev + value);
-  };
 
-  const handleOperationClick = (op: string) => {
-    setOperation(op);
-    setPaidAmount(parseFloat(inputValue) || 0);
-    setInputValue('');
-  };
-
-  const handleCalculate = () => {
-    const numericValue = parseFloat(inputValue) || 0;
-    let result = paidAmount;
-
-    if (operation === '+') result += numericValue;
-
-    const updatedRemaining = totalOrder !== null ? Math.max(totalOrder - result, 0) : null;
-
-    setPaidAmount(result);
-    if (updatedRemaining !== null) setRemainingAmount(updatedRemaining);
-    setInputValue(result.toFixed(2));
-    setOperation(null);
-  };
-
-  const handleDeleteCharacter = () => setInputValue((prev) => prev.slice(0, -1));
+  const handleDeleteCharacter = () =>
+    setInputValue((prev) => prev.slice(0, -1));
 
   const handleClearAll = () => {
     setInputValue('');
     setPaidAmount(0);
     setTotalOrder(null);
     setRemainingAmount(null);
-    setOperation(null);
+    setChangeToReturn(null);
+    setPromoCode('');
+    setAppliedDiscount(0);
+    setPointsUtilises(0);
   };
 
-  const handleValidate = () => {
-    const total = parseFloat(inputValue);
-    if (!isNaN(total)) {
-      setTotalOrder(total);
-      setRemainingAmount(total);
-      setInputValue('');
-      Modal.success({ content: 'Total défini avec succès !' });
-    } else if (remainingAmount === 0) {
-      Modal.success({ content: 'Paiement validé avec succès !' });
-      handleClearAll();
+  const handleApplyPromo = async () => {
+    const code = promoCode.trim().toUpperCase();
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/apply-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        Modal.warning({ content: errorData.message });
+        return;
+      }
+  
+      const promo = await response.json();
+      const discount = (promo.discount_percent / 100) * initialTotal;
+  
+      setAppliedDiscount(discount);
+  
+      const subtotalAfterPromo = initialTotal - discount;
+      setTotalOrder(subtotalAfterPromo);
+      setRemainingAmount(subtotalAfterPromo - paidAmount);
+      setChangeToReturn(paidAmount - subtotalAfterPromo > 0 ? paidAmount - subtotalAfterPromo : 0);
+  
+      Modal.success({
+        content: `Remise de ${discount.toFixed(2)} € appliquée !`
+      });
+    } catch (error) {
+      Modal.error({
+        content: "Erreur serveur ou réseau lors de l'application du code."
+      });
+    }
+  };
+  const utiliserPointsFidelite = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/fidelite-config');
+      const { conversion_rate } = await res.json();
+      setConversionRate(conversion_rate);
+  
+      const baseTotal = initialTotal - appliedDiscount;
+      const maxRemise = infoClient.pointsfidelite * conversion_rate;
+      const remiseAppliquee = Math.min(baseTotal, maxRemise);
+      const points = Math.floor(remiseAppliquee / conversion_rate);
+      const finalTotal = baseTotal - remiseAppliquee;
+  
+      setPointsUtilises(points);
+      setTotalOrder(finalTotal);
+      setRemainingAmount(finalTotal - paidAmount);
+      setChangeToReturn(paidAmount - finalTotal > 0 ? paidAmount - finalTotal : 0);
+  
+      Modal.success({
+        content: `Points fidélité utilisés : ${points} (${remiseAppliquee.toFixed(2)} €)`
+      });
+    } catch (error) {
+      Modal.error({
+        content: "Erreur lors de l'utilisation des points fidélité"
+      });
+    }
+  };
+  const handleCompleteOrder = async () => {
+    const finalTotal = totalOrder ?? total;
+    console.log("Points utilisés:", pointsUtilises);
+
+    if (pointsUtilises > 0) {
+      try {
+        await fetch('http://localhost:5000/api/update-fidelite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: infoClient.phoneNumber,
+            pointsUsed: pointsUtilises,
+          }),
+        });
+      } catch (error) {
+        Modal.warning({ content: "Erreur lors de la mise à jour des points fidélité." });
+      }
+    }
+
+    const newOrder = {
+      id: Date.now(),
+      total: finalTotal,
+      paid: paidAmount,
+      remainingAmount,
+      promoCode,
+      appliedDiscount,
+      pointsUtilises,
+      client: infoClient,
+      items: [...panier],
+    }
+
+    commandesValide.push(newOrder);
+
+    const savedOrders = JSON.parse(localStorage.getItem("savedOrders") || "[]");
+    savedOrders.push(newOrder);
+    localStorage.setItem("savedOrders", JSON.stringify(savedOrders));
+
+    Modal.success({ content: 'Commande terminée et enregistrée !' });
+
+    viderPanier();
+    handleClearAll();
+    if (onSuccess) onSuccess();
+    onClose();
+  };
+
+  useEffect(() => {
+    const paid = parseFloat(inputValue);
+    if (!isNaN(paid)) {
+      setPaidAmount(paid);
+      setRemainingAmount((totalOrder ?? total) - paid);
+      setChangeToReturn(
+        paid - (totalOrder ?? total) > 0 ? paid - (totalOrder ?? total) : 0
+      );
     } else {
-      Modal.warning({ content: 'Il reste un montant à payer.' });
+      setPaidAmount(0);
+      setRemainingAmount(totalOrder ?? total);
+      setChangeToReturn(null);
     }
-  };
+  }, [inputValue, total, totalOrder]);
 
-  const handlePayInFull = () => {
-    if (totalOrder !== null) {
-      setPaidAmount(totalOrder);
-      setRemainingAmount(0);
-      setInputValue(totalOrder.toFixed(2));
+  useEffect(() => {
+    const fetchFideliteConfig = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/fidelite-config');
+        const { conversion_rate } = await res.json();
+        setConversionRate(conversion_rate);
+      } catch (error) {
+        console.error('Erreur lors du chargement du taux de fidélité', error);
+      }
+    };
+
+    const fetchPromoCodes = async () => {
+      try {
+        await fetch('http://localhost:5000/api/promo-codes');
+      } catch (error) {
+        console.error('Erreur lors du chargement des codes promo', error);
+      }
+    };
+
+    if (open) {
+      fetchFideliteConfig();
+      fetchPromoCodes();
     }
-  };
+  }, [open]);
 
   return (
-    <div style={{ padding: 20 }}>
-      <Button type="primary" icon={<ShoppingOutlined />} onClick={showModal}>
-        Ouvrir Paiement
-      </Button>
-
-      <Modal
-        title={
-          <div>
-            <Typography.Title level={4} style={{ marginBottom: '10px' }}>
-              Interface de Paiement
-            </Typography.Title>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography.Text style={{ fontSize: '16px' }}>
-                <strong>Total de la commande:</strong>{' '}
-                {totalOrder !== null ? totalOrder.toFixed(2) : '--'} €
-              </Typography.Text>
-              <Typography.Text style={{ fontSize: '16px' }}>
-                <strong>Reste à payer:</strong>{' '}
-                {(remainingAmount !== null && remainingAmount !== totalOrder)
-                  ? remainingAmount.toFixed(2)
-                  : totalOrder !== null
-                    ? totalOrder.toFixed(2)
-                    : '--'} €
-              </Typography.Text>
-            </div>
-          </div>
-        }
-        open={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-        width={900}
-      >
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <div style={{ height: 300, width: '100%' }}>
-            <Split
-              sizes={[45, 45, 10]}
-              minSize={100}
-              gutterSize={10}
-              direction="horizontal"
-              style={{ display: 'flex', height: '100%' }}
+    <Modal
+      title={
+        <div>
+          <Typography.Title level={4}>Interface de Paiement</Typography.Title>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 10
+            }}
+          >
+            <Typography.Text>
+              <strong>Total après remise:</strong>{' '}
+              {totalOrder?.toFixed(2) ?? total.toFixed(2)} €
+            </Typography.Text>
+            <Typography.Text
+              type={
+                remainingAmount !== null && remainingAmount > 0
+                  ? 'danger'
+                  : 'success'
+              }
             >
-              {/* Panel 1: Montant payé */}
-              <div style={{ background: '#f0f2f5', padding: '10px' }}>
-                <Typography.Title level={4}>Montant payé</Typography.Title>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography.Text style={{ fontSize: '18px', fontWeight: 'bold' }}>Espèce</Typography.Text>
-                  <Typography.Text style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                    Montant: {paidAmount.toFixed(2)} €
-                  </Typography.Text>
-                  <Button
-                    type="primary"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={handleClearAll}
-                  />
-                </div>
-              </div>
-
-              {/* Panel 2: Calculatrice */}
-              <div style={{ background: '#fafafa', padding: '10px' }}>
-                <Input
-                  placeholder="Saisissez ici"
-                  value={inputValue}
-                  style={{ marginBottom: '15px' }}
-                  readOnly
-                />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                  {Array.from({ length: 9 }, (_, i) => (
-                    <Button key={i + 1} type="primary" onClick={() => handleButtonClick((i + 1).toString())}>
-                      {i + 1}
-                    </Button>
-                  ))}
-                  <Button type="primary" onClick={() => handleButtonClick('.')}>.</Button>
-                  <Button type="primary" onClick={() => handleButtonClick('0')}>0</Button>
-                  <Button type="primary" onClick={() => handleOperationClick('+')}>+</Button>
-                  <Button danger onClick={handleDeleteCharacter}>Supp Caractère</Button>
-                  <Button danger onClick={handleClearAll}>Effacer tout</Button>
-                  <Button type="primary" style={{ gridColumn: 'span 3' }} onClick={handlePayInFull}>
-                    Régler en totalité
-                  </Button>
-                </div>
-              </div>
-
-              {/* Panel 3: Actions Rapides */}
-              <div style={{ background: '#e6f7ff', padding: '10px' }}>
-                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                  <Button
-                    type="primary"
-                    style={{ backgroundColor: 'orange', borderColor: 'orange', width: '100%', height: '45px' }}
-                    onClick={handleCalculate}
-                  >
-                    OK
-                  </Button>
-                  <Button
-                    type="primary"
-                    style={{ width: '100%', height: '45px' }}
-                    onClick={() => handleButtonClick('5')}
-                  >
-                    5 €
-                  </Button>
-                  <Button
-                    type="primary"
-                    style={{ width: '100%', height: '45px' }}
-                    onClick={() => handleButtonClick('10')}
-                  >
-                    10 €
-                  </Button>
-                  <Button
-                    type="primary"
-                    style={{ width: '100%', height: '45px' }}
-                    onClick={() => handleButtonClick('20')}
-                  >
-                    20 €
-                  </Button>
-                  <Button
-                    type="primary"
-                    style={{ backgroundColor: 'green', borderColor: 'green', width: '100%', height: '45px' }}
-                    onClick={handleValidate}
-                  >
-                    Valider
-                  </Button>
-                </Space>
-              </div>
-            </Split>
+              <strong>
+                {remainingAmount !== null && remainingAmount > 0
+                  ? 'Reste à payer:'
+                  : 'À rendre au client:'}
+              </strong>{' '}
+              {(
+                (remainingAmount !== null && remainingAmount > 0
+                  ? remainingAmount
+                  : changeToReturn) ?? (totalOrder ?? total)
+              ).toFixed(2)}{' '}
+              €
+            </Typography.Text>
           </div>
-        </Space>
-      </Modal>
-    </div>
+          <Typography.Text>
+            <strong>Total points fidélité:</strong>{' '}
+            {infoClient.pointsfidelite}
+          </Typography.Text>
+          {pointsUtilises > 0 && (
+            <Typography.Text type="success">
+              <br />
+              <strong>Points utilisés:</strong> {pointsUtilises} (
+              {(pointsUtilises * conversionRate).toFixed(2)} €)
+            </Typography.Text>
+
+          )}
+        </div>
+      }
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      width={900}
+    >
+      <Space direction="vertical" style={{ width: '100%' }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+          <Input
+            placeholder="Code promo"
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value)}
+            style={{ width: 200 }}
+          />
+          <Button type="dashed" onClick={handleApplyPromo}>
+            Appliquer
+          </Button>
+          <Button type="primary" onClick={utiliserPointsFidelite}>
+            Utiliser les points fidélité
+          </Button>
+          {appliedDiscount > 0 && (
+            <Typography.Text type="success">
+              Remise: -{appliedDiscount.toFixed(2)} €
+            </Typography.Text>
+          )}
+        </div>
+
+        <div style={{ height: 300 }}>
+          <Split
+            sizes={[45, 45, 10]}
+            minSize={100}
+            gutterSize={10}
+            direction="horizontal"
+            style={{ display: 'flex', height: '100%' }}
+          >
+            <div style={{ padding: 10, background: '#f0f2f5' }}>
+              <Typography.Title level={4}>Montant payé</Typography.Title>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography.Text>Espèce</Typography.Text>
+                <Typography.Text>
+                  Montant: {paidAmount.toFixed(2)} €
+                </Typography.Text>
+                <Button
+                  type="primary"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={handleClearAll}
+                />
+              </div>
+            </div>
+
+            <div style={{ padding: 10, background: '#fafafa' }}>
+              <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                style={{ marginBottom: 10 }}
+              />
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: 10
+                }}
+              >
+                {Array.from({ length: 9 }, (_, i) => (
+                  <Button
+                    key={i}
+                    onClick={() => handleButtonClick((i + 1).toString())}
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
+                <Button onClick={() => handleButtonClick('.')}>.</Button>
+                <Button onClick={() => handleButtonClick('0')}>0</Button>
+                <Button danger onClick={handleDeleteCharacter}>
+                  Supp Caractère
+                </Button>
+                <Button danger onClick={handleClearAll}>
+                  Effacer tout
+                </Button>
+              </div>
+            </div>
+
+            <div style={{ padding: 10, background: '#e6f7ff' }}>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Button
+                  type="primary"
+                  style={{ background: 'orange', borderColor: 'orange' }}
+                >
+                  OK
+                </Button>
+                {[5, 10, 20].map((val) => (
+                  <Button
+                    key={val}
+                    onClick={() => handleButtonClick(val.toString())}
+                  >
+                    {val} €
+                  </Button>
+                ))}
+                <Button
+                  type="primary"
+                  style={{ background: 'green', borderColor: 'green' }}
+                  onClick={handleCompleteOrder}
+                >
+                  valide
+                </Button>
+              </Space>
+            </div>
+          </Split>
+        </div>
+      </Space>
+    </Modal>
   );
 };
 
-export default App;
+export default PaiementModal;

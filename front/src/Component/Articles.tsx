@@ -24,10 +24,10 @@ interface Produit {
     designation: string;
     image?: string;
     tva: number;
-    pricttc: number;
+    prixttc: number;
     couleur?: string;
     category: string;
-    pointsFid: number;
+    pointsfid: number;
 }
 
 
@@ -39,6 +39,8 @@ const Articles: React.FC = () => {
     const [form] = Form.useForm();
     const [formAjout] = Form.useForm();
     const [categories, setCategories] = useState<{ id: string; designation: string }[]>([]);
+    const [filtreDesignation, setFiltreDesignation] = useState("");
+    const [filtreCategorie, setFiltreCategorie] = useState("");
 
     useEffect(() => {
         chargerProduits();
@@ -55,7 +57,7 @@ const Articles: React.FC = () => {
             message.error("Erreur lors du chargement des produits.");
         }
     };
-    
+
     const chargerCategories = async () => {
         try {
             const res = await fetch("http://localhost:5000/api/categories");
@@ -150,6 +152,14 @@ const Articles: React.FC = () => {
             message.error("Erreur lors de la suppression.");
         }
     };
+    const produitsFiltres = produits.filter((produit) => {
+        const matchDesignation = produit.designation
+            .toLowerCase()
+            .includes(filtreDesignation.toLowerCase());
+        const matchCategorie = filtreCategorie ? produit.category === filtreCategorie : true;
+        return matchDesignation && matchCategorie;
+    });
+
 
     const colonnes = [
         { title: "ID", dataIndex: "id", key: "id" },
@@ -177,16 +187,18 @@ const Articles: React.FC = () => {
         },
         {
             title: "Prix TTC",
-            dataIndex: "pricttc",
-            key: "pricttc",
-            render: (prix: any) => parseFloat(prix).toFixed(2),
-        },
+            dataIndex: "prixttc",
+            key: "prixttc",
+            render: (prix: any) =>
+                prix !== null && !isNaN(parseFloat(prix)) ? `${parseFloat(prix).toFixed(2)} €` : '—',
+        }
+        ,
         {
             title: "Pts Fidélité",
-            dataIndex: "pointsFid",
-            key: "pointsFid",
+            dataIndex: "pointsfid",
+            key: "pointsfid",
         },
-        
+
         {
             title: "Couleur",
             dataIndex: "couleur",
@@ -209,19 +221,11 @@ const Articles: React.FC = () => {
             render: (_: any, record: Produit) => (
                 <Space>
                     <Tooltip title="Modifier">
-                        <Button
-                            shape="circle"
-                            icon={<EditOutlined />}
-                            onClick={() => modifierProduit(record)}
-                        />
+
+                        <Button size="large" shape="circle" icon={<EditOutlined />} onClick={() => modifierProduit(record)} />
                     </Tooltip>
                     <Tooltip title="Supprimer">
-                        <Button
-                            shape="circle"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={() => supprimerProduit(record.id)}
-                        />
+                        <Button size="large" shape="circle" danger icon={<DeleteOutlined />} onClick={() => supprimerProduit(record.id)} />
                     </Tooltip>
                 </Space>
             ),
@@ -229,7 +233,28 @@ const Articles: React.FC = () => {
     ];
 
     return (
-        <>
+        <div>
+            <div style={{ display: "flex", gap: "1rem", marginBottom: 16 }}>
+                <Input
+                    placeholder="Rechercher par désignation"
+                    value={filtreDesignation}
+                    onChange={(e) => setFiltreDesignation(e.target.value)}
+                    style={{ width: 300 }}
+                />
+                <Select
+                    placeholder="Filtrer par catégorie"
+                    allowClear
+                    value={filtreCategorie || undefined}
+                    onChange={(value) => setFiltreCategorie(value || "")}
+                    style={{ width: 200 }}
+                >
+                    {categories.map((cat) => (
+                        <Option key={cat.id} value={cat.designation}>
+                            {cat.designation}
+                        </Option>
+                    ))}
+                </Select>
+            </div>
             <div
                 style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}
             >
@@ -245,10 +270,12 @@ const Articles: React.FC = () => {
 
             <Table
                 columns={colonnes}
-                dataSource={produits}
+                dataSource={produitsFiltres}
                 rowKey={(record) => record.id.toString()}
                 bordered
+                pagination={{ pageSize: 6 }}
             />
+
 
             {/* MODAL MODIFICATION */}
             <Modal
@@ -256,40 +283,41 @@ const Articles: React.FC = () => {
                 open={isModalVisible}
                 onOk={handleOk}
                 onCancel={() => setIsModalVisible(false)}
+                style={{ marginTop: "-50px" }}
             >
-                <Form form={form} layout="vertical" onFinish={handleOk}>
-                    <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="pricttc" label="Prix TTC" rules={[{ required: true }]}>
-                        <Input type="number" />
-                    </Form.Item>
-                    <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
-                        <Input type="number" />
-                    </Form.Item>
-                    <Form.Item name="couleur" label="Couleur">
-                        <Input type="color" />
-                    </Form.Item>
-                    <Form.Item name="pointsfid" label="Points Fidélité">
-                        <Input type="number" />
-                    </Form.Item>
-                    <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>
-                        <Select placeholder="Choisir une catégorie">
-                            {categories.map((cat) => (
-                                <Option key={cat.id} value={cat.designation}>
-                                    {cat.designation}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-                    <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={e => e.fileList}>
-                        <Upload beforeUpload={() => false} maxCount={1}>
-                            <Button icon={<UploadOutlined />}>Choisir une nouvelle image</Button>
-                        </Upload>
-                    </Form.Item>
-                </Form>
-
-
+                <div style={{ height: "600px", maxHeight: "80vh", overflowY: "auto" }}>
+                    <Form form={form} layout="vertical" onFinish={handleOk}>
+                        <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true }]}>
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item name="couleur" label="Couleur">
+                            <Input type="color" />
+                        </Form.Item>
+                        <Form.Item name="pointsfid" label="Points Fidélité">
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>
+                            <Select placeholder="Choisir une catégorie">
+                                {categories.map((cat) => (
+                                    <Option key={cat.id} value={cat.designation}>
+                                        {cat.designation}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={e => e.fileList}>
+                            <Upload beforeUpload={() => false} maxCount={1}>
+                                <Button icon={<UploadOutlined />}>Choisir une nouvelle image</Button>
+                            </Upload>
+                        </Form.Item>
+                    </Form>
+                </div>
             </Modal>
 
             {/* MODAL AJOUT */}
@@ -298,56 +326,59 @@ const Articles: React.FC = () => {
                 open={isAddModalVisible}
                 onCancel={() => setIsAddModalVisible(false)}
                 footer={null}
+                style={{ marginTop: "-50px" }}
             >
-                <Form form={formAjout} layout="vertical" onFinish={handleAjoutProduit}>
-                    <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="pricttc" label="Prix TTC" rules={[{ required: true }]}>
-                        <Input type="number" />
-                    </Form.Item>
-                    <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
-                        <Input type="number" />
-                    </Form.Item>
-                    <Form.Item name="couleur" label="Couleur">
-                        <Input type="color" />
-                    </Form.Item>
-                    <Form.Item name="pointsFid" label="Points Fidélité">
-                        <Input type="number" />
-                    </Form.Item>
-                    <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>
-                        <Select placeholder="Choisir une catégorie">
-                            {categories.map((cat) => (
-                                <Option key={cat.id} value={cat.designation}>
-                                    {cat.designation}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-                    <Form.Item
-                        name="image"
-                        label="Image"
-                        valuePropName="fileList"
-                        getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList}
-                    >
-                        <Upload
-                            listType="picture"
-                            beforeUpload={() => false}
-                            maxCount={1}
-                            defaultFileList={[]}
+                <div style={{ height: "650px" }}>
+                    <Form form={formAjout} layout="vertical" onFinish={handleAjoutProduit} >
+                        <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true }]}>
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item name="couleur" label="Couleur">
+                            <Input type="color" />
+                        </Form.Item>
+                        <Form.Item name="pointsfid" label="Points Fidélité">
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>
+                            <Select placeholder="Choisir une catégorie">
+                                {categories.map((cat) => (
+                                    <Option key={cat.id} value={cat.designation}>
+                                        {cat.designation}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            name="image"
+                            label="Image"
+                            valuePropName="fileList"
+                            getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList}
                         >
-                            <Button icon={<UploadOutlined />}>Choisir une image</Button>
-                        </Upload>
-                    </Form.Item>
+                            <Upload
+                                listType="picture"
+                                beforeUpload={() => false}
+                                maxCount={1}
+                                defaultFileList={[]}
+                            >
+                                <Button icon={<UploadOutlined />}>Choisir une image</Button>
+                            </Upload>
+                        </Form.Item>
 
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit">
-                            Ajouter
-                        </Button>
-                    </Form.Item>
-                </Form>
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit">
+                                Ajouter
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                </div>
             </Modal>
-        </>
+        </div>
     );
 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Form, Input, message, Popconfirm, Modal } from "antd";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 
 // Définir l'interface Client
 interface Client {
@@ -10,7 +10,8 @@ interface Client {
     prenom: string;
     telephone: string;
     adresse: string;
-    pointsFidelite: number;
+    pointsfidelite: number;
+    cardfidelity: ""
 }
 
 const ClientsPage: React.FC = () => {
@@ -120,33 +121,22 @@ const ClientsPage: React.FC = () => {
         },
         {
             title: "Points de fidélité",
-            dataIndex: "pointsFidelite",
-            key: "pointsFidelite",
+            dataIndex: "pointsfidelite",
+            key: "pointsfidelite",
+        },
+        {
+            title: "Cart fidélité",
+            dataIndex: "cardfidelity",
+            key: "cardfidelity",
         },
         {
             title: "Actions",
             key: "actions",
             render: (_: any, record: Client) => (
                 <>
-                    <Button
-                        onClick={() => modifierClient(record)}
-                        style={{ marginRight: 8 }}
-                        icon={<EditOutlined />}
-                        type="primary"
-                        shape="circle"
-                    />
-                    <Popconfirm
-                        title="Supprimer ce client ?"
-                        onConfirm={() => supprimerClient(record.id)}
-                        okText="Oui"
-                        cancelText="Non"
-                    >
-                        <Button
-                            danger
-                            icon={<DeleteOutlined />}
-                            type="primary"
-                            shape="circle"
-                        />
+                    <Button onClick={() => modifierClient(record)} style={{ marginRight: 8 }} icon={<EditOutlined />} shape="circle" size="large" />
+                    <Popconfirm title="Supprimer ce client ?" onConfirm={() => supprimerClient(record.id)} okText="Oui" cancelText="Non">
+                        <Button danger icon={<DeleteOutlined />} shape="circle" size="large" />
                     </Popconfirm>
                 </>
             ),
@@ -157,15 +147,13 @@ const ClientsPage: React.FC = () => {
         <div className="container mt-5">
             <h2 className="text-center mb-4">Gestion des clients</h2>
 
-            <div className="shadow p-4 mb-4 bg-white rounded">
-                <Button type="primary" onClick={() => setIsModalVisible(true)}>
+            <div className="text-end mb-3">
+                <Button icon={<PlusOutlined />} type="primary" onClick={() => setIsModalVisible(true)}>
                     Ajouter un client
                 </Button>
             </div>
 
-            <div className="shadow p-4 bg-white rounded">
-                <Table dataSource={clients} columns={columns} rowKey="id" pagination={{ pageSize: 5 }} />
-            </div>
+            <Table dataSource={clients} columns={columns} rowKey="id" pagination={{ pageSize: 4 }} />
 
             <Modal
                 title={editingClient ? "Modifier le client" : "Ajouter un client"}
@@ -186,19 +174,16 @@ const ClientsPage: React.FC = () => {
                         <Input placeholder="Téléphone du client" />
                     </Form.Item>
 
+
                     <Form.Item label="Adresse" name="adresse" rules={[{ required: true, message: "Veuillez entrer l'adresse" }]}>
                         <Input placeholder="Adresse du client" />
                     </Form.Item>
-
-                    <Form.Item label="Points de fidélité" name="pointsFidelite" rules={[{ required: true, message: "Veuillez entrer les points de fidélité" }]}>
-                        <Input placeholder="Points de fidélité" type="number" />
-                    </Form.Item>
-
                     <Form.Item>
                         <Button type="primary" htmlType="submit" loading={loading}>
                             {editingClient ? "Modifier le client" : "Ajouter le client"}
                         </Button>
                     </Form.Item>
+
                 </Form>
             </Modal>
         </div>

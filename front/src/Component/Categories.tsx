@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, message, Modal, Form, Input, Upload, Space, Tooltip } from "antd";
-import { UploadOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+
+// Définition du type Category
+interface Category {
+    id: string;
+    designation: string;
+    couleur: string;
+    image: string | File;  // Modifie cette ligne pour accepter les deux types
+}
+
 
 function CategoriesList() {
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState<Category[]>([]); // Type des catégories
+    const [searchText, setSearchText] = useState(""); // Etat pour la recherche
     const [modalVisible, setModalVisible] = useState(false); // Ajout
     const [modalEditVisible, setModalEditVisible] = useState(false); // Modification
     const [formCategory, setFormCategory] = useState({
@@ -11,9 +21,7 @@ function CategoriesList() {
         couleur: "#000000",
         image: null as File | null,
     });
-
-    
-    const [formCategoryEdit, setFormCategoryEdit] = useState<any>(null); // Objet catégorie à modifier
+    const [formCategoryEdit, setFormCategoryEdit] = useState<Category | null>(null); // Objet catégorie à modifier
 
     useEffect(() => {
         fetchCategories();
@@ -49,7 +57,7 @@ function CategoriesList() {
 
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormCategoryEdit({ ...formCategoryEdit, [name]: value });
+        setFormCategoryEdit({ ...formCategoryEdit!, [name]: value });
     };
 
     const handleImageChange = (file: File) => {
@@ -58,7 +66,7 @@ function CategoriesList() {
     };
 
     const handleEditImageChange = (file: File) => {
-        setFormCategoryEdit({ ...formCategoryEdit, image: file });
+        setFormCategoryEdit({ ...formCategoryEdit!, image: file });
         return false;
     };
 
@@ -89,13 +97,13 @@ function CategoriesList() {
     const handleEditSubmit = async () => {
         try {
             const formData = new FormData();
-            formData.append("designation", formCategoryEdit.designation);
-            formData.append("couleur", formCategoryEdit.couleur);
-            if (formCategoryEdit.image instanceof File) {
-                formData.append("image", formCategoryEdit.image);
+            formData.append("designation", formCategoryEdit!.designation);
+            formData.append("couleur", formCategoryEdit!.couleur);
+            if (formCategoryEdit!.image instanceof File) {
+                formData.append("image", formCategoryEdit!.image);
             }
 
-            const response = await fetch(`http://localhost:5000/api/categories/${formCategoryEdit.id}`, {
+            const response = await fetch(`http://localhost:5000/api/categories/${formCategoryEdit!.id}`, {
                 method: "PUT",
                 body: formData,
             });
@@ -109,6 +117,11 @@ function CategoriesList() {
             message.error(error.message);
         }
     };
+
+    // Fonction de filtrage sur la colonne "Désignation"
+    const filteredCategories = categories.filter((category) =>
+        category.designation.toLowerCase().includes(searchText.toLowerCase())
+    );
 
     const columns = [
         {
@@ -142,7 +155,7 @@ function CategoriesList() {
         {
             title: "Actions",
             key: "actions",
-            render: (text: string, record: any) => (
+            render: (text: string, record: Category) => (
                 <Space>
                     <Tooltip title="Modifier">
                         <Button
@@ -167,14 +180,30 @@ function CategoriesList() {
         },
     ];
 
-
     return (
         <div>
-            <Button type="primary" onClick={() => setModalVisible(true)} style={{ marginBottom: 16 }}>
-                Ajouter une catégorie
-            </Button>
+            <div style={{ display: "flex", gap: "1rem", marginBottom: 16 }}>
+            <Input
+                    placeholder="Rechercher par désignation"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ width: 200 }}
+                />
+            </div>
+            <div
+                style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}
+            >
+                <h2>Liste des catégories</h2>
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setModalVisible(true)}
+                >
+                    Ajouter une catégorie
+                </Button>
+            </div>
 
-            <Table dataSource={categories} columns={columns} rowKey="id" />
+            <Table dataSource={filteredCategories} columns={columns} rowKey="id" />
 
             {/* Modal d'ajout */}
             <Modal
@@ -245,4 +274,5 @@ function CategoriesList() {
         </div>
     );
 };
+
 export default CategoriesList;

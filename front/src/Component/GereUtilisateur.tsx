@@ -7,6 +7,7 @@ import {
   message,
   Popconfirm,
   Modal,
+  Select,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -45,7 +46,7 @@ const UsersPage: React.FC = () => {
       const data = await response.json();
 
       if (Array.isArray(data)) {
-        setUtilisateurs(data.filter((user) => user.role === "user"));
+        setUtilisateurs(data); // <-- Plus de filtre ici
       } else {
         message.error("Format de données invalide reçu du serveur");
       }
@@ -58,6 +59,7 @@ const UsersPage: React.FC = () => {
     nom: string;
     email: string;
     password: string;
+    role: string; // <-- Assure-toi que le champ `role` est bien pris en compte
   }) => {
     try {
       if (isEditing && editingUserId !== null) {
@@ -66,7 +68,7 @@ const UsersPage: React.FC = () => {
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...values, role: "user" }),
+            body: JSON.stringify(values), // <-- On garde le rôle tel quel
           }
         );
 
@@ -77,7 +79,7 @@ const UsersPage: React.FC = () => {
         const response = await fetch("http://localhost:5000/api/utilisateurs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...values, role: "user" }),
+          body: JSON.stringify(values), // <-- Idem ici
         });
 
         if (!response.ok) throw new Error();
@@ -118,6 +120,7 @@ const UsersPage: React.FC = () => {
     }
   };
 
+
   const columns = [
     {
       title: "Nom",
@@ -130,35 +133,28 @@ const UsersPage: React.FC = () => {
       key: "email",
     },
     {
+      title: "Rôle",
+      dataIndex: "role",
+      key: "role",
+      render: (role: string) => {
+        if (role === "admin") return <span style={{ color: "#fa541c" }}>Admin</span>;
+        if (role === "user") return <span style={{ color: "#1890ff" }}>Utilisateur</span>;
+        return <span>{role}</span>;
+      },
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (_: any, record: Utilisateur) => (
         <>
-          <Button
-            onClick={() => modifierUtilisateur(record)}
-            style={{ marginRight: 8 }}
-            icon={<EditOutlined />}
-            type="primary"
-            shape="circle"
-          />
-          <Popconfirm
-            title="Supprimer cet utilisateur ?"
-            onConfirm={() => supprimerUtilisateur(record.id)}
-            okText="Oui"
-            cancelText="Non"
-          >
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              type="primary"
-              shape="circle"
-            />
+          <Button onClick={() => modifierUtilisateur(record)} style={{ marginRight: 8 }} icon={<EditOutlined />} shape="circle" size="large"/>
+          <Popconfirm title="Supprimer cet utilisateur ?" onConfirm={() => supprimerUtilisateur(record.id)} okText="Oui" cancelText="Non">
+            <Button danger icon={<DeleteOutlined />} shape="circle" size="large"/>
           </Popconfirm>
         </>
       ),
     },
   ];
-
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Gestion des utilisateurs</h2>
@@ -222,6 +218,16 @@ const UsersPage: React.FC = () => {
             rules={[{ required: true, message: "Veuillez entrer un mot de passe" }]}
           >
             <Input.Password placeholder="Mot de passe" />
+          </Form.Item>
+          <Form.Item
+            label="Rôle"
+            name="role"
+            rules={[{ required: true, message: "Veuillez sélectionner un rôle" }]}
+          >
+            <Select placeholder="Sélectionnez un rôle">
+              <Select.Option value="admin">Admin</Select.Option>
+              <Select.Option value="user">Utilisateur</Select.Option>
+            </Select>
           </Form.Item>
 
           <Form.Item className="text-end">

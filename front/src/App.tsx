@@ -1,35 +1,25 @@
 import { useRoutes } from "react-router-dom";
 import Login from "./Component/Login";
 import Home from "./Component/Home";
-import GestionProduit from "./Component/GestionProduit";
-import CmndEnAtt from "./Component/CmndEnAtt";
-import CategoriesForm from "./Component/CategoriesForm";
-import Produits from "./Component/Produits";
-import Paiment from "./Component/paiment";
-
+import { CartProvider } from "./Component/CartContext";
+import HomeSimple from "./Component/HomeSimple";
+import Princibale from "./Component/Princibale";
 
 const AppRoutes = () => {
   return useRoutes([
+    { path: "/", element: <Princibale /> },
     { path: "/login", element: <Login /> },
     { path: "/home", element: <Home /> },
-    { path: "/gestion-produit", element: <GestionProduit /> },
-    { path: "/liste-commande", element: <CmndEnAtt /> },
-    {path : "/gestion-produit",element:<GestionProduit/>},
-    {path : "/liste-commande",element:<CmndEnAtt/>},
-    { path: "/paiment", element: <Paiment /> },
-
-
-    { path: "/ajouter-categorie", element: <CategoriesForm /> },
-    { path: "/produits", element: <Produits /> },
+    { path: "/home-simple", element: <HomeSimple /> },
 
   ]);
 };
 
 const App = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <AppRoutes />
-    </div>
+    <CartProvider >
+        <AppRoutes />
+    </CartProvider>
   );
 };
 

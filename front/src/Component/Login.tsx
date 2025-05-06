@@ -26,10 +26,11 @@ const AuthPage: React.FC = () => {
   
         // ✅ Redirection selon le rôle
         if (data.role === "admin") {
-          navigate("/home");
+          navigate("/home"); // accès total
         } else {
-          navigate("/home");
+          navigate("/home-simple"); // accès limité
         }
+        
       } else {
         message.error(data.message);
       }
