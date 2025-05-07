@@ -46,6 +46,7 @@ function Home({ setCart, cart }: homeType) {
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [infoClient, setInfoClient] = useState({
+    id: 0,
     phoneNumber: "",
     name: "",
     firstName: "",
@@ -65,6 +66,7 @@ function Home({ setCart, cart }: homeType) {
     setCart([]);                 // Vide le panier
     setSelectedPayment(null);    // Réinitialise le paiement sélectionné
     setInfoClient({
+      id: 0,
       phoneNumber: "",
       name: "",
       firstName: "",
@@ -234,9 +236,8 @@ function Home({ setCart, cart }: homeType) {
   const totalPanier = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const isClientInfoValid = () => {
-    return infoClient.name.trim() !== "" &&
-      infoClient.firstName.trim() !== "" &&
-      infoClient.phoneNumber.trim() !== "";
+    const phone = infoClient.phoneNumber.trim();
+    return phone.length === 8 && /^\d{8}$/.test(phone);
   };
 
 

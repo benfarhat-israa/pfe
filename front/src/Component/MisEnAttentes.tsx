@@ -33,6 +33,7 @@ function CommandesAttentePage({ setActivePage, setCart }: CommandesAttentePagePr
   const [selectedPaiementTotal, setSelectedPaiementTotal] = useState<number>(0);
   const [onPaiementSuccess, setOnPaiementSuccess] = useState<(() => void) | null>(null);
   const [infoClient] = useState({
+    id: 0,
     phoneNumber: "",
     name: "",
     firstName: "",

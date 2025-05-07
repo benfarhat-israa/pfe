@@ -2,23 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Typography, Space, Input } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import Split from 'react-split';
-
+import { notification } from 'antd';
 const commandesValide: any[] = [];
-const panier: any[] = [];
 
 interface Item {
   key: string;
   name: string;
   quantity: number;
   prixttc: number;
-}
-
-interface Commande {
-  commandeNum: string;
-  nombreArticles: number;
-  totalCommande: number;
-  resteAPayer: number;
-  items: Item[];
 }
 
 interface PaiementModalProps {
@@ -28,6 +19,7 @@ interface PaiementModalProps {
   onSuccess?: () => void;
   panier: Item[]; // <-- AJOUTER ICI
   infoClient: {
+    id: number;
     phoneNumber: string;
     name: string;
     firstName: string;
@@ -59,7 +51,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
   const viderPanier = () => {
     panier.length = 0;
   };
-  
+
 
   const handleButtonClick = (value: string) =>
     setInputValue((prev) => prev + value);
@@ -80,30 +72,30 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
 
   const handleApplyPromo = async () => {
     const code = promoCode.trim().toUpperCase();
-  
+
     try {
       const response = await fetch('http://localhost:5000/api/apply-promo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code })
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         Modal.warning({ content: errorData.message });
         return;
       }
-  
+
       const promo = await response.json();
       const discount = (promo.discount_percent / 100) * initialTotal;
-  
+
       setAppliedDiscount(discount);
-  
+
       const subtotalAfterPromo = initialTotal - discount;
       setTotalOrder(subtotalAfterPromo);
       setRemainingAmount(subtotalAfterPromo - paidAmount);
       setChangeToReturn(paidAmount - subtotalAfterPromo > 0 ? paidAmount - subtotalAfterPromo : 0);
-  
+
       Modal.success({
         content: `Remise de ${discount.toFixed(2)} € appliquée !`
       });
@@ -118,18 +110,18 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
       const res = await fetch('http://localhost:5000/api/fidelite-config');
       const { conversion_rate } = await res.json();
       setConversionRate(conversion_rate);
-  
+
       const baseTotal = initialTotal - appliedDiscount;
       const maxRemise = infoClient.pointsfidelite * conversion_rate;
       const remiseAppliquee = Math.min(baseTotal, maxRemise);
       const points = Math.floor(remiseAppliquee / conversion_rate);
       const finalTotal = baseTotal - remiseAppliquee;
-  
+
       setPointsUtilises(points);
       setTotalOrder(finalTotal);
       setRemainingAmount(finalTotal - paidAmount);
       setChangeToReturn(paidAmount - finalTotal > 0 ? paidAmount - finalTotal : 0);
-  
+
       Modal.success({
         content: `Points fidélité utilisés : ${points} (${remiseAppliquee.toFixed(2)} €)`
       });
@@ -139,24 +131,18 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
       });
     }
   };
-  const handleCompleteOrder = async () => {
-    const finalTotal = totalOrder ?? total;
-    console.log("Points utilisés:", pointsUtilises);
+  const handleValideCommande = async () => {
 
-    if (pointsUtilises > 0) {
-      try {
-        await fetch('http://localhost:5000/api/update-fidelite', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phoneNumber: infoClient.phoneNumber,
-            pointsUsed: pointsUtilises,
-          }),
-        });
-      } catch (error) {
-        Modal.warning({ content: "Erreur lors de la mise à jour des points fidélité." });
+    const finalTotal = totalOrder ?? total;
+    //    // Création de la commande
+    const generatedCardNumber = `${Math.floor(1000000000000 + Math.random() * 9000000000000)}`;
+
+    const clientFinal = infoClient.id === 0
+      ? {
+        ...infoClient,
+        cardfidelity: generatedCardNumber
       }
-    }
+      : infoClient;
 
     const newOrder = {
       id: Date.now(),
@@ -166,24 +152,34 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
       promoCode,
       appliedDiscount,
       pointsUtilises,
-      client: infoClient,
+      client: clientFinal,
       items: [...panier],
+    };
+
+
+    try {
+      const response = await fetch('http://localhost:5000/api/commandes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newOrder),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la sauvegarde dans la base de données');
+      }
+    } catch (error) {
+      notification.error({
+        message: 'Erreur',
+        description: "Impossible d'enregistrer la commande dans l’historique.",
+        duration: 2,
+      });
+      return;
     }
-
-    commandesValide.push(newOrder);
-
-    const savedOrders = JSON.parse(localStorage.getItem("savedOrders") || "[]");
-    savedOrders.push(newOrder);
-    localStorage.setItem("savedOrders", JSON.stringify(savedOrders));
-
-    Modal.success({ content: 'Commande terminée et enregistrée !' });
-
     viderPanier();
     handleClearAll();
     if (onSuccess) onSuccess();
     onClose();
   };
-
   useEffect(() => {
     const paid = parseFloat(inputValue);
     if (!isNaN(paid)) {
@@ -376,7 +372,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
                 <Button
                   type="primary"
                   style={{ background: 'green', borderColor: 'green' }}
-                  onClick={handleCompleteOrder}
+                  onClick={handleValideCommande}
                 >
                   valide
                 </Button>

@@ -46,12 +46,25 @@ const HistoriqueCommandes: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    const savedOrders = JSON.parse(localStorage.getItem('savedOrders') || '[]');
-    setCommandes(savedOrders);
+    const fetchCommandes = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/commandes");
+        const data = await response.json();
+        setCommandes(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des commandes :", error);
+      }
+    };
+  
+    fetchCommandes();
   }, []);
+  
 
-  const formatMontant = (val: number | undefined | null) => (val ? val.toFixed(2) : '0.00');
-
+  const formatMontant = (val: any) => {
+    const num = parseFloat(val);
+    return isNaN(num) ? '0.00' : num.toFixed(2);
+  };
+  
   const handleVoirDetails = (commande: CommandeValidee) => {
     setSelectedCommande(commande);
     setModalVisible(true);
@@ -62,11 +75,17 @@ const HistoriqueCommandes: React.FC = () => {
     setSelectedCommande(null);
   };
 
-  const handleSupprimerCommande = (id: number) => {
-    const updated = commandes.filter((cmd) => cmd.id !== id);
-    setCommandes(updated);
-    localStorage.setItem('savedOrders', JSON.stringify(updated));
+  const handleSupprimerCommande = async (id: number) => {
+    try {
+      await fetch(`http://localhost:5000/api/commandes/${id}`, {
+        method: "DELETE",
+      });
+      setCommandes(commandes.filter(cmd => cmd.id !== id));
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+    }
   };
+  
 
   const handleResetHistorique = () => {
     setCommandes([]);

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Card, Row, Col, Form, Input, Button, Space, Modal } from "antd";
+import { Card, Row, Col, Form, Input, Button, Space, Modal, Typography } from "antd";
 import { UserOutlined, PhoneOutlined, HomeOutlined } from "@ant-design/icons";
-import VirtualKeyboard from "./VirtualKeyboard";
 
 interface Client {
+  id: number;
   nom: string;
   prenom: string;
   telephone: string;
@@ -15,6 +15,7 @@ interface Client {
 interface ClientInfoProps {
   onClientReady: (client: Client) => void;
   infoClient: {
+    id: number;
     phoneNumber: string;
     name: string;
     firstName: string;
@@ -23,6 +24,7 @@ interface ClientInfoProps {
     cardfidelity: string;
   };
   setInfoClient: React.Dispatch<React.SetStateAction<{
+    id: number;
     phoneNumber: string;
     name: string;
     firstName: string;
@@ -35,16 +37,9 @@ interface ClientInfoProps {
 const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setInfoClient }) => {
   const [currentView, setCurrentView] = useState("emporter");
   const [activeField, setActiveField] = useState<string | null>(null);
-  const [showKeyboard, setShowKeyboard] = useState(false);
-
-  // Génère un numéro de carte fidélité à 13 chiffres
-  const generateFidelityCardNumber = () => {
-    return `${Math.floor(1000000000000 + Math.random() * 9000000000000)}`;
-  };
 
   const handleFocus = (fieldName: string) => {
     setActiveField(fieldName);
-    setShowKeyboard(true);
   };
 
   const handleChange = (key: string, value: any) => {
@@ -57,6 +52,7 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setI
       if (response.ok) {
         const existingClient: Client = await response.json();
         setInfoClient({
+          id: existingClient.id,
           phoneNumber: existingClient.telephone,
           name: existingClient.nom,
           firstName: existingClient.prenom,
@@ -64,52 +60,7 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setI
           pointsfidelite: existingClient.pointsfidelite || 0,
           cardfidelity: existingClient.cardfidelity,
         });
-        setShowKeyboard(false);
-
-        // onClientReady(existingClient);
-      } else if (response.status === 404) {
-        // Nouveau client → on attend que les champs nécessaires soient remplis
-        if (!infoClient.name || (currentView === "livraison" && (!infoClient.firstName || !infoClient.address))) {
-          return;
-        }
-
-        const newClient: Client = {
-          nom: infoClient.name,
-          prenom: infoClient.firstName,
-          telephone: infoClient.phoneNumber,
-          adresse: infoClient.address,
-          pointsfidelite: 0,
-          cardfidelity: generateFidelityCardNumber(),
-        };
-
-        const addResponse = await fetch("http://localhost:5000/api/clients", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newClient),
-        });
-
-        if (addResponse.ok) {
-          const data = await addResponse.json();
-          Modal.success({
-            title: "Client ajouté",
-            content: `Numéro de carte fidélité : ${data.cardfidelity}`,
-          });
-          setInfoClient({
-            phoneNumber: data.telephone,
-            name: data.nom,
-            firstName: data.prenom,
-            address: data.adresse,
-            pointsfidelite: 0,
-            cardfidelity: data.cardfidelity,
-          });
-          setShowKeyboard(false);
-          onClientReady(data);
-        } else {
-          Modal.error({
-            title: "Erreur",
-            content: "Impossible d’ajouter le client.",
-          });
-        }
+        onClientReady(existingClient);
       }
     } catch (error) {
       Modal.error({
@@ -117,13 +68,20 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setI
         content: "Impossible de contacter le serveur.",
       });
     }
-  }
+  };
 
-  useEffect(() => {
-  }, [currentView]);
+  useEffect(() => { }, [currentView]);
 
   return (
-    <Card style={{ padding: 20, borderRadius: 20, marginLeft: 10, backgroundColor: "#f9f9f9", height: "260px" }}>
+    <Card
+      style={{
+        padding: 20,
+        borderRadius: 20,
+        marginLeft: 10,
+        backgroundColor: "#f9f9f9",
+        height: "260px",
+      }}
+    >
       <Space style={{ marginBottom: 10, marginTop: "-40px" }}>
         {["emporter", "livraison", "surplace"].map((view) => (
           <Button
@@ -164,7 +122,7 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setI
                 maxLength={8}
                 value={infoClient.phoneNumber}
                 onChange={(e) => {
-                  const onlyDigits = e.target.value.replace(/\D/g, ""); // Retire tout caractère non numérique
+                  const onlyDigits = e.target.value.replace(/\D/g, "");
                   handleChange("phoneNumber", onlyDigits);
                   if (onlyDigits.length === 8) {
                     getInfoClient(onlyDigits);
@@ -172,7 +130,6 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setI
                 }}
                 onFocus={() => handleFocus("phone")}
               />
-
             </Form.Item>
           </Col>
 
@@ -203,7 +160,6 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setI
               </Col>
             </>
           )}
-
           <Input
             disabled
             value={infoClient.cardfidelity}
@@ -212,14 +168,6 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setI
           />
         </Row>
       </Form>
-
-      {/* {showKeyboard && (
-        <VirtualKeyboard
-          visible={showKeyboard}
-          onChange={handleInputChange}
-          onClose={() => setShowKeyboard(false)}
-        />
-      )} */}
     </Card>
   );
 };
