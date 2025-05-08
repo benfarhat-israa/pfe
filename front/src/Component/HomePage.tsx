@@ -34,6 +34,7 @@ type homeType = {
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>
   cart: CartItem[]
 }
+
 function Home({ setCart, cart }: homeType) {
   // const [cart, setCart] = useState<CartItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +46,8 @@ function Home({ setCart, cart }: homeType) {
   const [filteredProduits, setFilteredProduits] = useState<Produit[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [conversionRate, setConversionRate] = useState<number | null>(null);
+  const pointsgagneé = cart.reduce((sum, item) => sum + item.pointsfid * item.quantity, 0);
   const [infoClient, setInfoClient] = useState({
     id: 0,
     phoneNumber: "",
@@ -54,8 +57,22 @@ function Home({ setCart, cart }: homeType) {
     pointsfidelite: 0,
     cardfidelity: "",
   });
+  const valeurPointsFidelite = infoClient.pointsfidelite * (conversionRate || 0);
+  useEffect(() => {
+    const fetchConversionRate = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/fidelite-config");
+        const data = await res.json();
+        setConversionRate(data.conversion_rate);
+      } catch (err) {
+        console.error("Erreur lors du chargement du taux de conversion :", err);
+      }
+    };
 
-  console.log("cart", cart)
+    fetchConversionRate();
+  }, []);
+
+
   const showModal = (produit: { name: string; prixttc: number | string | null }) => {
     setSelecteProduit(produit);
     setIsModalOpen(true);
@@ -192,9 +209,6 @@ function Home({ setCart, cart }: homeType) {
       message.warning("Le panier est vide.");
       return;
     }
-
-    const totalPointsFid = cart.reduce((sum, item) => sum + item.pointsfid * item.quantity, 0);
-
     const pendingItems = cart.map(item => ({
       key: item.key,
       name: item.name,
@@ -208,7 +222,7 @@ function Home({ setCart, cart }: homeType) {
       nombreArticles: cart.length,
       totalCommande: parseFloat(totalAmount),
       resteAPayer: parseFloat(totalAmount),
-      totalPointsFid: totalPointsFid, // Ajouté ici
+      pointsgagneé: pointsgagneé, // Ajouté ici
       items: pendingItems,
     };
 
@@ -242,7 +256,7 @@ function Home({ setCart, cart }: homeType) {
 
 
   return (
-    <Row style={{ height: "100vh", overflow: "hidden" }}> {/* Fixe la hauteur de tout l'écran */}
+    <Row style={{ height: "100vh", overflow: "hidden" }}>
       <Col xs={10} sm={10} md={10} lg={8} xl={8}>
         <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
           <div style={{ flex: 1, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#0b2799 #f1f1f1" }}>
@@ -339,7 +353,6 @@ function Home({ setCart, cart }: homeType) {
         <Layout style={{ backgroundColor: "white" }}>
           <Content className="p-2">
             <ClientInfo onClientReady={(client) => {
-              console.log("Client prêt :", client);
             }}
 
               infoClient={infoClient} setInfoClient={setInfoClient}
@@ -469,6 +482,10 @@ function Home({ setCart, cart }: homeType) {
           key: String(item.key),  // Convertir la clé en string
           prixttc: item.price ?? item.price * item.quantity,
         }))}
+        valeurPointsFidelite={valeurPointsFidelite}
+        pointsgagneé={pointsgagneé}
+        conversionRate={conversionRate}
+
       />
 
 

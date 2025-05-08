@@ -10,7 +10,7 @@ interface VirtualKeyboardProps {
 }
 
 const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, visible, onClose }) => {
-  const [input, setInput] = useState("");
+  const [, setInput] = useState("");
   const [layout, setLayout] = useState("default");
 
   const handleChange = (newInput: string) => {

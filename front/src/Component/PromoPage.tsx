@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Table, Typography, Space, Form, DatePicker, Modal, message } from 'antd';
+import { Input, Button, Table, Typography, Space, Form, DatePicker, Modal, message, Popconfirm } from 'antd';
 import 'antd/dist/reset.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import dayjs, { Dayjs } from 'dayjs';
@@ -96,13 +96,7 @@ const PromoPage: React.FC = () => {
     };
 
     const handleDeletePromo = async (id: number) => {
-        Modal.confirm({
-            title: 'Supprimer ce code ?',
-            content: 'Cette action est irréversible.',
-            okText: 'Oui',
-            okType: 'danger',
-            cancelText: 'Non',
-            onOk: async () => {
+
                 try {
                     await fetch(`http://localhost:5000/api/promo-codes/${id}`, {
                         method: 'DELETE',
@@ -115,8 +109,7 @@ const PromoPage: React.FC = () => {
                     console.error("Erreur lors de la suppression", error);
                 }
             }
-        });
-    };
+
 
     const openModalForEdit = (promo: PromoCode) => {
         setEditingPromo(promo);
@@ -158,9 +151,11 @@ const PromoPage: React.FC = () => {
             key: 'actions',
             render: (_: any, record: PromoCode) => (
                 <Space>
-                    <Button size="large"  shape="circle" icon={<CopyOutlined />} onClick={() => navigator.clipboard.writeText(record.code)}></Button>
-                    <Button size="large"  shape="circle" icon={<EditOutlined />} onClick={() => openModalForEdit(record)}></Button>
-                    <Button size="large"  shape="circle" danger icon={<DeleteOutlined />} onClick={() => handleDeletePromo(record.id)}></Button>
+                    <Button size="large" shape="circle" icon={<CopyOutlined />} onClick={() => navigator.clipboard.writeText(record.code)}></Button>
+                    <Button size="large" shape="circle" icon={<EditOutlined />} onClick={() => openModalForEdit(record)}></Button>
+                    <Popconfirm title="Supprimer ce client ?" onConfirm={() => handleDeletePromo(record.id)} okText="Oui" cancelText="Non">
+                        <Button size="large" shape="circle" danger icon={<DeleteOutlined />} ></Button>
+                    </Popconfirm>
                 </Space>
             ),
         },

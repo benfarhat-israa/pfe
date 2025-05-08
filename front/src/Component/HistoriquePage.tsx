@@ -4,10 +4,8 @@ import {
   Typography,
   Modal,
   Button,
-  Space,
   Divider,
   Popconfirm,
-  Pagination,
   Row,
   Col,
   List,
@@ -29,6 +27,7 @@ interface CommandeValidee {
   promoCode: string;
   appliedDiscount: number;
   pointsUtilises: number;
+  dateCommande: string; 
   client: {
     phoneNumber: string;
     name: string;

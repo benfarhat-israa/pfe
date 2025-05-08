@@ -12,11 +12,11 @@ const Deconnection: React.FC<DeconnectionProps> = ({ setActivePage }) => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("activePage");
-    window.location.href = "/login"; // ou navigate("/login") si tu utilises react-router
+    window.location.href = "/login";
   };
 
   const handleCancel = () => {
-    setActivePage("home"); // revient proprement à la page d’accueil
+    setActivePage("home");
   };
 
   return (

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Card, Typography, Button, Row, Col, message, Pagination } from "antd";
-import Paiment from "./paiment";
-
 const { Text } = Typography;
 
 interface Item {
@@ -28,19 +26,6 @@ type CommandesAttentePagePropsType = {
 
 function CommandesAttentePage({ setActivePage, setCart }: CommandesAttentePagePropsType) {
   const [commandesAttente, setCommandesAttente] = useState<Commande[]>([]);
-  const [selectedCommande, setSelectedCommande] = useState<Commande | null>(null);
-  const [isPaiementModalVisible, setPaiementModalVisible] = useState(false);
-  const [selectedPaiementTotal, setSelectedPaiementTotal] = useState<number>(0);
-  const [onPaiementSuccess, setOnPaiementSuccess] = useState<(() => void) | null>(null);
-  const [infoClient] = useState({
-    id: 0,
-    phoneNumber: "",
-    name: "",
-    firstName: "",
-    address: "",
-    pointsfidelite: 0,
-    cardfidelity: "",
-  });
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
@@ -81,23 +66,6 @@ function CommandesAttentePage({ setActivePage, setCart }: CommandesAttentePagePr
     setCommandesAttente(updatedPendingOrders);
     localStorage.setItem("pendingOrders", JSON.stringify(updatedPendingOrders));
   };
-
-  const handleValider = (commande: Commande, globalIndex: number) => {
-    setSelectedCommande(commande);
-    const total = commande.resteAPayer ?? commande.totalCommande ?? 0;
-    setSelectedPaiementTotal(typeof total === "string" ? parseFloat(total) : total);
-
-    const onSuccessPaiement = () => {
-      const updated = commandesAttente.filter((_, i) => i !== globalIndex);
-      setCommandesAttente(updated);
-      localStorage.setItem("pendingOrders", JSON.stringify(updated));
-      message.success("Commande validée et supprimée.");
-    };
-
-    setPaiementModalVisible(true);
-    setOnPaiementSuccess(() => onSuccessPaiement);
-  };
-
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: 20 }}>
       <Typography.Title level={4}>Commandes en attente</Typography.Title>
@@ -129,18 +97,10 @@ function CommandesAttentePage({ setActivePage, setCart }: CommandesAttentePagePr
                       <Button
                         type="primary"
                         ghost
-                        style={{ borderColor: "#1890ff", color: "#1890ff" }}
+                        style={{ borderColor: "#52c41a", color: "#52c41a" }}
                         onClick={() => handleContinuer(commande)}
                       >
                         Continuer
-                      </Button>
-                      <Button
-                        type="primary"
-                        ghost
-                        style={{ borderColor: "#52c41a", color: "#52c41a" }}
-                        onClick={() => handleValider(commande, globalIndex)}
-                      >
-                        Valider
                       </Button>
                       <Button
                         type="primary"
@@ -173,16 +133,6 @@ function CommandesAttentePage({ setActivePage, setCart }: CommandesAttentePagePr
             />
           )}
         </div>
-
-        <Paiment
-          open={isPaiementModalVisible}
-          onClose={() => setPaiementModalVisible(false)}
-          total={selectedPaiementTotal}
-          infoClient={infoClient}
-          panier={selectedCommande?.items ?? []}
-          onSuccess={onPaiementSuccess ?? undefined}
-        />
-
       </div>
     </div>
 

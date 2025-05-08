@@ -7,14 +7,14 @@ interface MenuPageProps {
   setActivePage: (page: string) => void;
 }
 
+
 const MenuPage: React.FC<MenuPageProps> = ({ activePage, setActivePage }) => {
-  const { pathname } = useLocation(); // ← récupère l’URL
+  const { pathname } = useLocation();
 
   const handleMenuClick = ({ key }: { key: string }) => {
     setActivePage(key);
   };
 
-  // Liste commune
   const commonItems = [
     {
       key: "home",
@@ -31,14 +31,14 @@ const MenuPage: React.FC<MenuPageProps> = ({ activePage, setActivePage }) => {
       label: "Commande",
       icon: "https://cdn-icons-png.flaticon.com/512/6948/6948527.png",
     },
-    {
-      key: "deconnection",
-      label: "deconnection",
-      icon: "https://cdn-icons-png.flaticon.com/512/152/152535.png",
-    },
   ];
 
-  // Items admin uniquement
+  const logoutItem = {
+    key: "deconnection",
+    label: "Déconnexion",
+    icon: "https://cdn-icons-png.flaticon.com/512/152/152535.png",
+  };
+
   const adminItems = [
     {
       key: "catalogue",
@@ -60,7 +60,6 @@ const MenuPage: React.FC<MenuPageProps> = ({ activePage, setActivePage }) => {
       label: "Paramètre",
       icon: "https://cdn-icons-png.flaticon.com/512/2099/2099058.png",
     },
-
   ];
 
   const menuItems = pathname === "/home" ? [...commonItems, ...adminItems] : commonItems;
@@ -92,6 +91,23 @@ const MenuPage: React.FC<MenuPageProps> = ({ activePage, setActivePage }) => {
               <Row justify="center">{label}</Row>
             </AntdMenu.Item>
           ))}
+
+          {/* Bouton déconnexion tout en bas */}
+          <AntdMenu.Item
+            key={logoutItem.key}
+            style={{
+              height: 90,
+              textAlign: "center",
+              border: "1px solid #ddd",
+              borderRadius: 10,
+              marginTop: 20,
+            }}
+          >
+            <Row justify="center">
+              <img src={logoutItem.icon} alt={logoutItem.label} style={{ width: 30, height: 20 }} />
+            </Row>
+            <Row justify="center">{logoutItem.label}</Row>
+          </AntdMenu.Item>
         </AntdMenu>
       </Col>
     </Row>

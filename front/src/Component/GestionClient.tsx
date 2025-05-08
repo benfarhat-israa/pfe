@@ -162,20 +162,18 @@ const ClientsPage: React.FC = () => {
                 footer={null}
             >
                 <Form layout="vertical" onFinish={onFinish} form={form}>
-                    <Form.Item label="Nom" name="nom" rules={[{ required: true, message: "Veuillez entrer le nom" }]}>
+                    <Form.Item label="Nom" name="nom">
                         <Input placeholder="Nom du client" />
                     </Form.Item>
 
-                    <Form.Item label="Prénom" name="prenom" rules={[{ required: true, message: "Veuillez entrer le prénom" }]}>
+                    <Form.Item label="Prénom" name="prenom" >
                         <Input placeholder="Prénom du client" />
                     </Form.Item>
 
                     <Form.Item label="Téléphone" name="telephone" rules={[{ required: true, message: "Veuillez entrer le téléphone" }]}>
                         <Input placeholder="Téléphone du client" />
                     </Form.Item>
-
-
-                    <Form.Item label="Adresse" name="adresse" rules={[{ required: true, message: "Veuillez entrer l'adresse" }]}>
+                    <Form.Item label="Adresse" name="adresse" >
                         <Input placeholder="Adresse du client" />
                     </Form.Item>
                     <Form.Item>

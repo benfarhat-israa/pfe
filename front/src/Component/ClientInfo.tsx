@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, Row, Col, Form, Input, Button, Space, Modal, Typography } from "antd";
+import { Card, Row, Col, Form, Input, Button, Space, Modal } from "antd";
 import { UserOutlined, PhoneOutlined, HomeOutlined } from "@ant-design/icons";
 
 interface Client {
@@ -36,7 +36,7 @@ interface ClientInfoProps {
 
 const ClientInfo: React.FC<ClientInfoProps> = ({ onClientReady, infoClient, setInfoClient }) => {
   const [currentView, setCurrentView] = useState("emporter");
-  const [activeField, setActiveField] = useState<string | null>(null);
+  const [,setActiveField] = useState<string | null>(null);
 
   const handleFocus = (fieldName: string) => {
     setActiveField(fieldName);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, message, Modal, Form, Input, Upload, Space, Tooltip } from "antd";
+import { Table, Button, message, Modal, Form, Input, Upload, Space, Popconfirm } from "antd";
 import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 // Définition du type Category
@@ -157,24 +157,10 @@ function CategoriesList() {
             key: "actions",
             render: (text: string, record: Category) => (
                 <Space>
-                    <Tooltip title="Modifier">
-                        <Button
-                            shape="circle"
-                            icon={<EditOutlined />}
-                            onClick={() => {
-                                setFormCategoryEdit(record);
-                                setModalEditVisible(true);
-                            }}
-                        />
-                    </Tooltip>
-                    <Tooltip title="Supprimer">
-                        <Button
-                            shape="circle"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={() => handleDelete(record.id)}
-                        />
-                    </Tooltip>
+                    <Button size="large" shape="circle" icon={<EditOutlined />} onClick={() => { setFormCategoryEdit(record); setModalEditVisible(true); }} />
+                    <Popconfirm title="Supprimer ce client ?" onConfirm={() => handleDelete(record.id)} okText="Oui" cancelText="Non">
+                        <Button size="large" shape="circle" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
                 </Space>
             ),
         },
@@ -183,7 +169,7 @@ function CategoriesList() {
     return (
         <div>
             <div style={{ display: "flex", gap: "1rem", marginBottom: 16 }}>
-            <Input
+                <Input
                     placeholder="Rechercher par désignation"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}

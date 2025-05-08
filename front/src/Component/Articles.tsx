@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
     Table,
     Button,
-    Tooltip,
     Space,
     Modal,
     Input,
@@ -10,6 +9,7 @@ import {
     message,
     Upload,
     Select,
+    Popconfirm,
 } from "antd";
 import {
     PlusOutlined,
@@ -51,7 +51,6 @@ const Articles: React.FC = () => {
         try {
             const res = await fetch("http://localhost:5000/api/produits");
             const data = await res.json();
-            console.log("Produits reçus:", data); // ⬅️ Ajoute ceci
             setProduits(data);
         } catch (err) {
             message.error("Erreur lors du chargement des produits.");
@@ -220,16 +219,14 @@ const Articles: React.FC = () => {
             key: "actions",
             render: (_: any, record: Produit) => (
                 <Space>
-                    <Tooltip title="Modifier">
-
                         <Button size="large" shape="circle" icon={<EditOutlined />} onClick={() => modifierProduit(record)} />
-                    </Tooltip>
-                    <Tooltip title="Supprimer">
-                        <Button size="large" shape="circle" danger icon={<DeleteOutlined />} onClick={() => supprimerProduit(record.id)} />
-                    </Tooltip>
+                        <Popconfirm title="Supprimer ce client ?" onConfirm={() =>supprimerProduit(record.id)} okText="Oui" cancelText="Non">
+                        <Button size="large" shape="circle" danger icon={<DeleteOutlined />}/>
+                        </Popconfirm>
                 </Space>
             ),
         },
+
     ];
 
     return (
@@ -299,7 +296,7 @@ const Articles: React.FC = () => {
                         <Form.Item name="couleur" label="Couleur">
                             <Input type="color" />
                         </Form.Item>
-                        <Form.Item name="pointsfid" label="Points Fidélité">
+                        <Form.Item name="pointsfid" label="Points Fidélité"rules={[{ required: true, message: "Veuillez entrer le points fidélité" }]}>
                             <Input type="number" />
                         </Form.Item>
                         <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>
@@ -311,7 +308,7 @@ const Articles: React.FC = () => {
                                 ))}
                             </Select>
                         </Form.Item>
-                        <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={e => e.fileList}>
+                        <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={e => e.fileList}rules={[{ required: true, message: "Veuillez entrer l'image" }]} >
                             <Upload beforeUpload={() => false} maxCount={1}>
                                 <Button icon={<UploadOutlined />}>Choisir une nouvelle image</Button>
                             </Upload>
@@ -328,8 +325,8 @@ const Articles: React.FC = () => {
                 footer={null}
                 style={{ marginTop: "-50px" }}
             >
-                <div style={{ height: "650px" }}>
-                    <Form form={formAjout} layout="vertical" onFinish={handleAjoutProduit} >
+                <div style={{ height: "600px", maxHeight: "80vh", overflowY: "auto" }}>
+                <Form form={formAjout} layout="vertical" onFinish={handleAjoutProduit} >
                         <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>

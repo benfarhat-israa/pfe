@@ -173,14 +173,12 @@ const UsersPage: React.FC = () => {
           Ajouter un utilisateur
         </Button>
       </div>
-
       <Table
         dataSource={utilisateurs}
         columns={columns}
         rowKey="id"
         pagination={{ pageSize: 5 }}
       />
-
       <Modal
         title={isEditing ? "Modifier l'utilisateur" : "Ajouter un utilisateur"}
         visible={modalVisible}

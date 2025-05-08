@@ -2,7 +2,7 @@ import { Button, Input, Form, InputNumber, message } from "antd";
 import React, { useEffect, useState } from "react";
 
 const GestionFidelite: React.FC = () => {
-  const [conversionRate, setConversionRate] = useState<number>(0.01);
+  const [conversionRate, setConversionRate] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/fidelite-config")
