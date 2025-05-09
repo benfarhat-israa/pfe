@@ -39,7 +39,7 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, visible, on
       }}
     >
       <h3 className="text-lg font-semibold text-white mb-4">Clavier Virtuel</h3>
-      
+
       <Keyboard
         onChange={handleChange}
         layoutName={layout}

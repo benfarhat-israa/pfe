@@ -1,27 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, message, Modal, Form, Input, Upload, Space, Popconfirm } from "antd";
 import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-
-// Définition du type Category
 interface Category {
     id: string;
     designation: string;
     couleur: string;
-    image: string | File;  // Modifie cette ligne pour accepter les deux types
+    image: string | File; 
 }
 
 
 function CategoriesList() {
-    const [categories, setCategories] = useState<Category[]>([]); // Type des catégories
-    const [searchText, setSearchText] = useState(""); // Etat pour la recherche
-    const [modalVisible, setModalVisible] = useState(false); // Ajout
-    const [modalEditVisible, setModalEditVisible] = useState(false); // Modification
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [searchText, setSearchText] = useState(""); 
+    const [modalVisible, setModalVisible] = useState(false); 
+    const [modalEditVisible, setModalEditVisible] = useState(false); 
     const [formCategory, setFormCategory] = useState({
         designation: "",
         couleur: "#000000",
         image: null as File | null,
     });
-    const [formCategoryEdit, setFormCategoryEdit] = useState<Category | null>(null); // Objet catégorie à modifier
+    const [formCategoryEdit, setFormCategoryEdit] = useState<Category | null>(null); 
 
     useEffect(() => {
         fetchCategories();
@@ -118,7 +116,6 @@ function CategoriesList() {
         }
     };
 
-    // Fonction de filtrage sur la colonne "Désignation"
     const filteredCategories = categories.filter((category) =>
         category.designation.toLowerCase().includes(searchText.toLowerCase())
     );
@@ -131,7 +128,7 @@ function CategoriesList() {
             render: (image: string) =>
                 image ? (
                     <img
-                        src={`http://localhost:5000/uploads/${image}`} // adapte selon ton chemin
+                        src={`http://localhost:5000/uploads/${image}`} 
                         alt="Catégorie"
                         style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 4 }}
                     />
@@ -199,7 +196,7 @@ function CategoriesList() {
                 footer={null}
             >
                 <Form layout="vertical" onFinish={handleSubmit}>
-                    <Form.Item label="Désignation" required>
+                    <Form.Item name="designation" label="Désignation" rules={[{ required: true, message: "Veuillez entrer un Désignation"}]}>
                         <Input name="designation" value={formCategory.designation} onChange={handleChange} />
                     </Form.Item>
                     <Form.Item label="Couleur">
@@ -227,14 +224,13 @@ function CategoriesList() {
                     footer={null}
                 >
                     <Form layout="vertical" onFinish={handleEditSubmit}>
-                        <Form.Item label="Désignation" required>
+                        <Form.Item name="designation" label="Désignation" rules={[{ required: true, message: "Veuillez entrer un Désignation"}]}>
                             <Input name="designation" value={formCategoryEdit.designation} onChange={handleEditChange} />
                         </Form.Item>
                         <Form.Item label="Couleur">
                             <Input type="color" name="couleur" value={formCategoryEdit.couleur} onChange={handleEditChange} />
                         </Form.Item>
                         <Form.Item label="Image">
-                            {/* Aperçu de l'image existante */}
                             {typeof formCategoryEdit.image === "string" && (
                                 <img
                                     src={`http://localhost:5000/uploads/${formCategoryEdit.image}`}
@@ -243,7 +239,6 @@ function CategoriesList() {
                                 />
                             )}
 
-                            {/* Champ pour changer l'image */}
                             <Upload beforeUpload={handleEditImageChange} showUploadList={false}>
                                 <Button icon={<UploadOutlined />}>Changer l'image</Button>
                             </Upload>

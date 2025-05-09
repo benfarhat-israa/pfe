@@ -3,7 +3,6 @@ import { Table, Button, Form, Input, message, Popconfirm, Modal } from "antd";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 
-// Définir l'interface Client
 interface Client {
     id: number;
     nom: string;
@@ -20,8 +19,6 @@ const ClientsPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
-
-    // Récupérer les clients depuis l'API
     const fetchClients = async () => {
         setLoading(true);
         try {

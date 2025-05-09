@@ -219,10 +219,10 @@ const Articles: React.FC = () => {
             key: "actions",
             render: (_: any, record: Produit) => (
                 <Space>
-                        <Button size="large" shape="circle" icon={<EditOutlined />} onClick={() => modifierProduit(record)} />
-                        <Popconfirm title="Supprimer ce client ?" onConfirm={() =>supprimerProduit(record.id)} okText="Oui" cancelText="Non">
-                        <Button size="large" shape="circle" danger icon={<DeleteOutlined />}/>
-                        </Popconfirm>
+                    <Button size="large" shape="circle" icon={<EditOutlined />} onClick={() => modifierProduit(record)} />
+                    <Popconfirm title="Supprimer ce client ?" onConfirm={() => supprimerProduit(record.id)} okText="Oui" cancelText="Non">
+                        <Button size="large" shape="circle" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
                 </Space>
             ),
         },
@@ -284,22 +284,22 @@ const Articles: React.FC = () => {
             >
                 <div style={{ height: "600px", maxHeight: "80vh", overflowY: "auto" }}>
                     <Form form={form} layout="vertical" onFinish={handleOk}>
-                        <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
+                        <Form.Item name="designation" label="Désignation" rules={[{ required: true, message: "Veuillez entrer un Désignation" }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true }]}>
+                        <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true, message: "Veuillez entrer un Prix TTC" }]}>
                             <Input type="number" />
                         </Form.Item>
-                        <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
+                        <Form.Item name="tva" label="TVA" rules={[{ required: true, message: "Veuillez entrer un TVA" }]}>
                             <Input type="number" />
                         </Form.Item>
                         <Form.Item name="couleur" label="Couleur">
                             <Input type="color" />
                         </Form.Item>
-                        <Form.Item name="pointsfid" label="Points Fidélité"rules={[{ required: true, message: "Veuillez entrer le points fidélité" }]}>
+                        <Form.Item name="pointsfid" label="Points Fidélité" rules={[{ required: true, message: "Veuillez entrer le points fidélité" }]}>
                             <Input type="number" />
                         </Form.Item>
-                        <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>
+                        <Form.Item name="category" label="Catégorie" rules={[{ required: true, message: "Veuillez sélectionner une catégorie" }]}>
                             <Select placeholder="Choisir une catégorie">
                                 {categories.map((cat) => (
                                     <Option key={cat.id} value={cat.designation}>
@@ -308,7 +308,7 @@ const Articles: React.FC = () => {
                                 ))}
                             </Select>
                         </Form.Item>
-                        <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={e => e.fileList}rules={[{ required: true, message: "Veuillez entrer l'image" }]} >
+                        <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={e => e.fileList} rules={[{ required: true, message: "Veuillez entrer l'image" }]} >
                             <Upload beforeUpload={() => false} maxCount={1}>
                                 <Button icon={<UploadOutlined />}>Choisir une nouvelle image</Button>
                             </Upload>
@@ -326,24 +326,24 @@ const Articles: React.FC = () => {
                 style={{ marginTop: "-50px" }}
             >
                 <div style={{ height: "600px", maxHeight: "80vh", overflowY: "auto" }}>
-                <Form form={formAjout} layout="vertical" onFinish={handleAjoutProduit} >
-                        <Form.Item name="designation" label="Désignation" rules={[{ required: true }]}>
+                    <Form form={formAjout} layout="vertical" onFinish={handleAjoutProduit} >
+                        <Form.Item name="designation" label="Désignation" rules={[{ required: true, message: "Veuillez entrer un Désignation" }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true }]}>
+                        <Form.Item name="prixttc" label="Prix TTC" rules={[{ required: true, message: "Veuillez entrer un Prix TTC" }]}>
                             <Input type="number" />
                         </Form.Item>
-                        <Form.Item name="tva" label="TVA" rules={[{ required: true }]}>
+                        <Form.Item name="tva" label="TVA" rules={[{ required: true, message: "Veuillez entrer un TVA" }]}>
                             <Input type="number" />
                         </Form.Item>
                         <Form.Item name="couleur" label="Couleur">
                             <Input type="color" />
                         </Form.Item>
-                        <Form.Item name="pointsfid" label="Points Fidélité">
+                        <Form.Item name="pointsfid" label="Points Fidélité" rules={[{ required: true, message: "Veuillez entrer un Points Fidélité" }]}>
                             <Input type="number" />
                         </Form.Item>
-                        <Form.Item name="category" label="Catégorie" rules={[{ required: true }]}>
-                            <Select placeholder="Choisir une catégorie">
+                        <Form.Item name="category" label="Catégorie" rules={[{ required: true, message: "Veuillez sélectionner une catégorie" }]}>
+                            <Select placeholder="Choisir une catégorie" >
                                 {categories.map((cat) => (
                                     <Option key={cat.id} value={cat.designation}>
                                         {cat.designation}

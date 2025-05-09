@@ -29,7 +29,6 @@ function CommandesAttentePage({ setActivePage, setCart }: CommandesAttentePagePr
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
-  // Fonction pour charger les commandes depuis localStorage
   const loadPendingOrders = () => {
     try {
       const stored = JSON.parse(localStorage.getItem("pendingOrders") || "[]");

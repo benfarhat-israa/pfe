@@ -9,7 +9,7 @@ const GestionFidelite: React.FC = () => {
       .then((res) => res.json())
       .then((data) => setConversionRate(data.conversion_rate));
   }, []);
-
+//conversion mis à jour
   const handleFinish = async () => {
     try {
       await fetch("http://localhost:5000/api/fidelite-config", {

@@ -210,7 +210,7 @@ const HistoriqueCommandes: React.FC = () => {
                   <p>-{formatMontant(selectedCommande.appliedDiscount)} €</p>
                 )}
                 {selectedCommande.pointsUtilises > 0 && (
-                  <p>{selectedCommande.pointsUtilises} ({(selectedCommande.pointsUtilises * 0.1).toFixed(2)} €)</p>
+                  <p>{selectedCommande.pointsUtilises}</p>
                 )}
                 <p>{formatMontant(selectedCommande.paid)} €</p>
                 <p>{formatMontant(selectedCommande.remainingAmount)} €</p>

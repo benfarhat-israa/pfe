@@ -30,11 +30,10 @@ const CommandesModal: React.FC<CommandesModalProps> = ({ visible, onClose }) => 
   };
 
   const handleAnnuler = (commandeNum: string) => {
-    // Remove the selected command from the list
     const updatedCommandes = commandesAttente.filter(
       (commande) => commande.commandeNum !== commandeNum
     );
-    setCommandesAttente(updatedCommandes); // Update state
+    setCommandesAttente(updatedCommandes); 
     alert(`Commande n° ${commandeNum} supprimée`);
   };
 

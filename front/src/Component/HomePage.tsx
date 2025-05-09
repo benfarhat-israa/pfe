@@ -3,7 +3,6 @@ import { Layout, Button, Table, Card, Row, Col, Typography, Space, Modal, Input,
 import { CheckOutlined, CloseOutlined, PlusOutlined, MinusOutlined, CreditCardOutlined, EuroOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import ClientInfo from "./ClientInfo";
 import Paiment from "./paiment";
-import Onlinie from "./Onlinie";
 
 const { Content, Sider } = Layout;
 
@@ -36,7 +35,6 @@ type homeType = {
 }
 
 function Home({ setCart, cart }: homeType) {
-  // const [cart, setCart] = useState<CartItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selecteProduit, setSelecteProduit] = useState<{ name: string; prixttc: number | string | null } | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
@@ -79,9 +77,9 @@ function Home({ setCart, cart }: homeType) {
     setQuantity(1);
   };
   const handleClosePaymentModal = () => {
-    setIsPaymentOpen(false);     // Ferme la modale
-    setCart([]);                 // Vide le panier
-    setSelectedPayment(null);    // Réinitialise le paiement sélectionné
+    setIsPaymentOpen(false);
+    setCart([]);
+    setSelectedPayment(null);
     setInfoClient({
       id: 0,
       phoneNumber: "",
@@ -90,7 +88,7 @@ function Home({ setCart, cart }: homeType) {
       address: "",
       pointsfidelite: 0,
       cardfidelity: "",
-    });                          // Réinitialise les infos client
+    });
   };
 
   const handleCancel = () => {
@@ -214,7 +212,7 @@ function Home({ setCart, cart }: homeType) {
       name: item.name,
       quantity: item.quantity,
       price: item.price,
-      pointsfid: item.pointsfid, // Optionnel : si tu veux aussi voir les points par produit
+      pointsfid: item.pointsfid, 
     }));
 
     const newCommande = {
@@ -222,7 +220,7 @@ function Home({ setCart, cart }: homeType) {
       nombreArticles: cart.length,
       totalCommande: parseFloat(totalAmount),
       resteAPayer: parseFloat(totalAmount),
-      pointsgagneé: pointsgagneé, // Ajouté ici
+      pointsgagneé: pointsgagneé,
       items: pendingItems,
     };
 
@@ -473,24 +471,21 @@ function Home({ setCart, cart }: homeType) {
 
 
       <Paiment
-        open={isPaymentOpen && selectedPayment === "cash"}
-        onClose={handleClosePaymentModal} // Remplace ici le onClose existant
+        open={isPaymentOpen }
+        onClose={handleClosePaymentModal} 
         total={totalPanier}
         infoClient={infoClient}
         panier={cart.map(item => ({
           ...item,
-          key: String(item.key),  // Convertir la clé en string
+          key: String(item.key),  
           prixttc: item.price ?? item.price * item.quantity,
         }))}
         valeurPointsFidelite={valeurPointsFidelite}
         pointsgagneé={pointsgagneé}
         conversionRate={conversionRate}
+        selectedPayment={selectedPayment}
 
       />
-
-
-      <Onlinie onClose={handleClosePaymentModal} visible={isPaymentOpen && selectedPayment === 'card'} />
-
 
     </Row>
   );

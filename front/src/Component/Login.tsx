@@ -22,13 +22,12 @@ const AuthPage: React.FC = () => {
   
       if (response.ok) {
         message.success(data.message);
-        localStorage.setItem("role", data.role); // ✅ Sauvegarde du rôle
+        localStorage.setItem("role", data.role);
   
-        // ✅ Redirection selon le rôle
         if (data.role === "admin") {
-          navigate("/home"); // accès total
+          navigate("/home"); 
         } else {
-          navigate("/home-simple"); // accès limité
+          navigate("/home-simple");
         }
         
       } else {

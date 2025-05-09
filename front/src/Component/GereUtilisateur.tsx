@@ -46,7 +46,7 @@ const UsersPage: React.FC = () => {
       const data = await response.json();
 
       if (Array.isArray(data)) {
-        setUtilisateurs(data); // <-- Plus de filtre ici
+        setUtilisateurs(data);
       } else {
         message.error("Format de données invalide reçu du serveur");
       }
@@ -59,7 +59,7 @@ const UsersPage: React.FC = () => {
     nom: string;
     email: string;
     password: string;
-    role: string; // <-- Assure-toi que le champ `role` est bien pris en compte
+    role: string;
   }) => {
     try {
       if (isEditing && editingUserId !== null) {
@@ -68,7 +68,7 @@ const UsersPage: React.FC = () => {
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(values), // <-- On garde le rôle tel quel
+            body: JSON.stringify(values),
           }
         );
 
@@ -79,7 +79,7 @@ const UsersPage: React.FC = () => {
         const response = await fetch("http://localhost:5000/api/utilisateurs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values), // <-- Idem ici
+          body: JSON.stringify(values),
         });
 
         if (!response.ok) throw new Error();

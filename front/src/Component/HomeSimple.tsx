@@ -9,13 +9,11 @@ import Deconnection from "./Deconnection";
 
 const POSSystem: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  // Récupérer la dernière page active depuis localStorage
   const [activePage, setActivePage] = useState(() => {
     return localStorage.getItem("activePage") || "home";
 
   });
 
-  // Sauvegarder la page active dans localStorage à chaque changement
   useEffect(() => {
     localStorage.setItem("activePage", activePage);
   }, [activePage]);
@@ -23,7 +21,6 @@ const POSSystem: React.FC = () => {
   return (
     <Row style={{ height: "100vh", overflow: "hidden" }}>
       <Col xs={24} sm={24} md={22} lg={22} xl={22}>
-        {/* Afficher la page active */}
         {activePage === "home" && <HomePage setCart={setCart} cart={cart} />}
         {activePage === "keyboard" && <KeyboardPage />}
         {activePage === "Commande" && <Commande setActivePage={setActivePage} setCart={setCart} />}
@@ -31,7 +28,6 @@ const POSSystem: React.FC = () => {
 
       </Col>
       <Col xs={24} sm={12} md={2} lg={2} xl={2} style={{ marginLeft: "auto" }}>
-        {/* Afficher le menu avec la page active */}
         <MenuPage activePage={activePage} setActivePage={setActivePage} />
       </Col>
     </Row>
