@@ -5,12 +5,10 @@ import HomePage, { CartItem } from "./HomePage";
 import OutilPage from "./OutilPage";
 import MenuPage from "./MenuPage";
 import KeyboardPage from "./KeyboardPage";
-import GereUtilisateur from "./GereUtilisateur";
-import GestionClient from "./GestionClient";
 import Commande from "./Commande";
 import Parametre from "./Parametre";
 import Deconnection from "./Deconnection";
-
+import ClientUtlisateur from "./ClientUtlisateur";
 const POSSystem: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activePage, setActivePage] = useState(() => {
@@ -28,8 +26,9 @@ const POSSystem: React.FC = () => {
         {activePage === "keyboard" && <KeyboardPage />}
         {activePage === "Commande" && <Commande setActivePage={setActivePage} setCart={setCart} />}
         {activePage === "catalogue" && <OutilPage />}
-        {activePage === "utilisateur" && <GereUtilisateur />}
-        {activePage === "client" && <GestionClient />}
+        {activePage === "clientutlisateur" && (
+  <ClientUtlisateur setActivePage={setActivePage} setCart={setCart} />
+)}
         {activePage === "paramètre" && <Parametre />}
         {activePage === "deconnection" && <Deconnection setActivePage={setActivePage} />}
 

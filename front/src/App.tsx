@@ -3,6 +3,7 @@ import Login from "./Component/Login";
 import Home from "./Component/Home";
 import HomeSimple from "./Component/HomeSimple";
 import Princibale from "./Component/Princibale";
+import "react-simple-keyboard/build/css/index.css";
 
 const AppRoutes = () => {
   return useRoutes([

@@ -109,10 +109,17 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
   const utiliserPointsFidelite = async () => {
     try {
       const baseTotal = initialTotal - appliedDiscount;
-      const maxRemise = valeurPointsFidelite/100;
+      console.log("baseTotal", baseTotal)
+      console.log('valeurPointsFidelite', valeurPointsFidelite)
+      const maxRemise = valeurPointsFidelite / 100;
+      console.log("maxRemise", maxRemise)
       const remiseAppliquee = Math.min(baseTotal, maxRemise);
+      console.log("remiseAppliquee", remiseAppliquee)
       const finalTotal = baseTotal - remiseAppliquee;
+      console.log("finalTotal", finalTotal)
       conversionRate && setPointsUtilises(remiseAppliquee * conversionRate);
+      console.log("conversionRate", conversionRate)
+
       setTotalOrder(finalTotal);
       setRemainingAmount(finalTotal - paidAmount);
       setChangeToReturn(paidAmount - finalTotal > 0 ? paidAmount - finalTotal : 0);
@@ -225,14 +232,6 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
       });
       return;
     }
-
-    notification.success({
-      message: "Commande validée",
-      description: selectedPayment === 'card'
-        ? "La commande a été enregistrée après paiement par carte."
-        : "La commande a été enregistrée après paiement en espèces.",
-    });
-
     viderPanier();
     handleClearAll();
     if (onSuccess) onSuccess();
@@ -305,7 +304,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
             {pointsUtilises > 0 && conversionRate !== null && (
               <Typography.Text type="success">
                 <br />
-                <strong>Points utilisés:</strong> {pointsUtilises} ({((pointsUtilises * conversionRate) / 100).toFixed(2)} €)
+                <strong>Points utilisés:</strong> {pointsUtilises}
               </Typography.Text>
             )}
           </div>

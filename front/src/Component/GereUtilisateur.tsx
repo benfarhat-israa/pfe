@@ -147,9 +147,9 @@ const UsersPage: React.FC = () => {
       key: "actions",
       render: (_: any, record: Utilisateur) => (
         <>
-          <Button onClick={() => modifierUtilisateur(record)} style={{ marginRight: 8 }} icon={<EditOutlined />} shape="circle" size="large"/>
+          <Button onClick={() => modifierUtilisateur(record)} style={{ marginRight: 8 }} icon={<EditOutlined />} shape="circle" size="large" />
           <Popconfirm title="Supprimer cet utilisateur ?" onConfirm={() => supprimerUtilisateur(record.id)} okText="Oui" cancelText="Non">
-            <Button danger icon={<DeleteOutlined />} shape="circle" size="large"/>
+            <Button danger icon={<DeleteOutlined />} shape="circle" size="large" />
           </Popconfirm>
         </>
       ),
@@ -157,9 +157,10 @@ const UsersPage: React.FC = () => {
   ];
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4">Gestion des utilisateurs</h2>
-
-      <div className="text-end mb-3">
+      <div
+        style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}
+      >
+        <h2>Gestion des utilisateurs</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}

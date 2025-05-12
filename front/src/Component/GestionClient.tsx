@@ -142,14 +142,19 @@ const ClientsPage: React.FC = () => {
 
     return (
         <div className="container mt-5">
-            <h2 className="text-center mb-4">Gestion des clients</h2>
-
-            <div className="text-end mb-3">
-                <Button icon={<PlusOutlined />} type="primary" onClick={() => setIsModalVisible(true)}>
-                    Ajouter un client
-                </Button>
-            </div>
-
+             <div
+        style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}
+      >
+        <h2>Gestion des clients</h2>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalVisible(true)}
+        >
+          Ajouter un client
+        </Button>
+      </div>
+           
             <Table dataSource={clients} columns={columns} rowKey="id" pagination={{ pageSize: 4 }} />
 
             <Modal

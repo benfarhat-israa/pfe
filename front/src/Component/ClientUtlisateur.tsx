@@ -1,8 +1,8 @@
 import React from "react";
 import { Layout, Tabs } from "antd";
-import MisEnAttentes from "./MisEnAttentes";
-import HistoriquePage from "./HistoriquePage";
 import { CartItem } from "./HomePage";
+import GereUtilisateur from "./GereUtilisateur";
+import GestionClient from "./GestionClient";
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -15,11 +15,11 @@ const Produits = ({ setActivePage, setCart }: CommandePropsType) => {
         <Layout >
             <Content style={{ padding: "20px" }}>
                 <Tabs defaultActiveKey="1">
-                    <TabPane tab="Historique des commandes" key="1">
-                        < HistoriquePage  />
+                    <TabPane tab="Gestion des clients" key="1">
+                        <GereUtilisateur />
                     </TabPane>
-                    <TabPane tab="Commandes en attentes" key="2">
-                        <MisEnAttentes setActivePage={setActivePage} setCart={setCart} />
+                    <TabPane tab="Gestion des utilisateurs" key="2">
+                        <GestionClient />
                     </TabPane>
                 </Tabs>
             </Content>

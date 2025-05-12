@@ -46,15 +46,11 @@ const MenuPage: React.FC<MenuPageProps> = ({ activePage, setActivePage }) => {
       icon: "https://cdn-icons-png.flaticon.com/512/69/69886.png",
     },
     {
-      key: "utilisateur",
-      label: "Utilisateur",
+      key: "clientutlisateur",
+      label: "clientutlisateur",
       icon: "https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small/user-icon-on-transparent-background-free-png.png",
     },
-    {
-      key: "client",
-      label: "Client",
-      icon: "https://cdn-icons-png.flaticon.com/512/686/686317.png",
-    },
+
     {
       key: "paramètre",
       label: "Paramètre",
